@@ -142,7 +142,7 @@ app.post("/login", (req, res) => {
 });
 
 // Protected route (accessible to all authenticated users)
-app.get("/protected", verifyJWT, (req, res) => {
+app.get("/app4/protected", verifyJWT, (req, res) => {
   console.log(`Protected route accessed by user: ${req.user.username}`);
   res.json({ message: "Protected content", username: req.user.username });
 });
