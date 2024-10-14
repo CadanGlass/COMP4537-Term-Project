@@ -132,5 +132,5 @@ app.get("/admin", verifyJWT, checkAdmin, (req, res) => {
 });
 
 app.listen(process.env.PORT || 3003, () =>
-  console.log(`Server running on http://localhost:${process.env.PORT || 3000}`)
+  console.log(`Server running on http://localhost:${process.env.PORT || 3003}`)
 );
