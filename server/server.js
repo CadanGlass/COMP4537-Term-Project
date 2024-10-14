@@ -81,16 +81,18 @@ app.post("/register", async (req, res) => {
 
   // Insert user into SQLite database with a role (defaults to 'user')
   const sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
-  db.run(sql, [username, hashedPassword, role || "user"], function (err) {
-    if (err) {
-      if (err.code === "SQLITE_CONSTRAINT") {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-      return res.status(500).json({ message: "Error registering user" });
-    }
+ db.run(sql, [username, hashedPassword, role || "user"], function (err) {
+   if (err) {
+     console.error("Database error:", err); // Log the error for debugging
+     if (err.code === "SQLITE_CONSTRAINT") {
+       return res.status(400).json({ message: "Username already exists" });
+     }
+     return res.status(500).json({ message: "Error registering user" });
+   }
 
-    res.status(201).json({ message: "User registered successfully" });
-  });
+   res.status(201).json({ message: "User registered successfully" });
+ });
+
 });
 
 // Login route (validate user using SQLite DB and compare hashed passwords)
