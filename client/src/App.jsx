@@ -3,6 +3,7 @@ import {
   Route,
   Routes,
   Navigate,
+  Link,
 } from "react-router-dom";
 
 import Login from "./components/Login";
@@ -11,13 +12,37 @@ import Admin from "./components/Admin";
 import Logout from "./components/Logout";
 import Register from "./components/Register";
 
+function Home() {
+  return (
+    <div>
+      <h1>Welcome to the App</h1>
+      <ul>
+        <li>
+          <Link to="/login">Login</Link>
+        </li>
+        <li>
+          <Link to="/register">Register</Link>
+        </li>
+        <li>
+          <Link to="/admin">Admin</Link>
+        </li>
+        <li>
+          <Link to="/protected">Protected</Link>
+        </li>
+        <li>
+          <Link to="/logout">Logout</Link>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
       <Routes>
         {/* Define a route for the base path ("/") */}
-        <Route path="/" element={<Navigate to="/login" />} />{" "}
-        {/* Redirect to login or any other page */}
+        <Route path="/" element={<Home />} /> {/* Main page with links */}
         {/* Your other routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
