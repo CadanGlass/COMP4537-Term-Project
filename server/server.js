@@ -13,9 +13,6 @@ const SALT_ROUNDS = 10; // Number of salt rounds for bcrypt
 app.use(express.json());
 app.use(cors()); // Enable CORS for all routes
 
-// Create a Router for your routes
-const router = express.Router();
-
 // Create JWT function
 function createJWT(payload, secretKey) {
   const header = JSON.stringify({ alg: "HS256", typ: "JWT" });
@@ -76,7 +73,7 @@ function checkAdmin(req, res, next) {
 }
 
 // Register route (store user in SQLite DB with a hashed password and role)
-router.post("/register", async (req, res) => {
+app.post("/register", async (req, res) => {
   const { username, password, role } = req.body;
 
   // Hash the password before storing it
@@ -84,21 +81,22 @@ router.post("/register", async (req, res) => {
 
   // Insert user into SQLite database with a role (defaults to 'user')
   const sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
-  db.run(sql, [username, hashedPassword, role || "user"], function (err) {
-    if (err) {
-      console.error("Database error:", err); // Log the error for debugging
-      if (err.code === "SQLITE_CONSTRAINT") {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-      return res.status(500).json({ message: "Error registering user" });
-    }
+ db.run(sql, [username, hashedPassword, role || "user"], function (err) {
+   if (err) {
+     console.error("Database error:", err); // Log the error for debugging
+     if (err.code === "SQLITE_CONSTRAINT") {
+       return res.status(400).json({ message: "Username already exists" });
+     }
+     return res.status(500).json({ message: "Error registering user" });
+   }
 
-    res.status(201).json({ message: "User registered successfully" });
-  });
+   res.status(201).json({ message: "User registered successfully" });
+ });
+
 });
 
 // Login route (validate user using SQLite DB and compare hashed passwords)
-router.post("/login", (req, res) => {
+app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
   // Retrieve user from SQLite database
@@ -124,19 +122,15 @@ router.post("/login", (req, res) => {
 });
 
 // Protected route (accessible to all authenticated users)
-router.get("/protected", verifyJWT, (req, res) => {
+app.get("/protected", verifyJWT, (req, res) => {
   res.json({ message: "Protected content", username: req.user.username });
 });
 
 // Admin-only route (accessible only to admin users)
-router.get("/admin", verifyJWT, checkAdmin, (req, res) => {
+app.get("/admin", verifyJWT, checkAdmin, (req, res) => {
   res.json({ message: "Welcome Admin!", username: req.user.username });
 });
 
-// Mount the router under the /app4 base path
-app.use("/app4", router);
-
-// Start the server
 app.listen(process.env.PORT || 3003, () =>
   console.log(`Server running on http://localhost:${process.env.PORT || 3003}`)
 );
