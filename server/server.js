@@ -153,6 +153,11 @@ app.get("/admin", verifyJWT, checkAdmin, (req, res) => {
   res.json({ message: "Welcome Admin!", username: req.user.username });
 });
 
+app.post("/test", (req, res) => {
+  res.json({ message: "Test successful" });
+});
+
+
 app.listen(process.env.PORT || 3003, () =>
   console.log(`Server running on http://localhost:${process.env.PORT || 3003}`)
 );
