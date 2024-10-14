@@ -86,7 +86,7 @@ function checkAdmin(req, res, next) {
 }
 
 // Register route (store user in SQLite DB with a hashed password and role)
-app.post("/app4/register", async (req, res) => {
+app.post("/register", async (req, res) => {
   console.log("Register attempt with data:", req.body);
 
   const { username, password, role } = req.body;
@@ -142,7 +142,7 @@ app.post("/login", (req, res) => {
 });
 
 // Protected route (accessible to all authenticated users)
-app.get("/app4/protected", verifyJWT, (req, res) => {
+app.get("/protected", verifyJWT, (req, res) => {
   console.log(`Protected route accessed by user: ${req.user.username}`);
   res.json({ message: "Protected content", username: req.user.username });
 });
