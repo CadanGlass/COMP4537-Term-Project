@@ -26,3 +26,7 @@ dist-ssr
 # db
 
 database.db
+
+#.env
+
+.env
