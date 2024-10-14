@@ -86,7 +86,7 @@ function checkAdmin(req, res, next) {
 }
 
 // Register route (store user in SQLite DB with a hashed password and role)
-app.post("/register/app4", async (req, res) => {
+app.post("app4/register/", async (req, res) => {
   console.log("Register attempt with data:", req.body);
 
   const { username, password, role } = req.body;
