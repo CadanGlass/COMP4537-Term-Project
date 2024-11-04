@@ -11,7 +11,14 @@ const SECRET_KEY = process.env.SECRET_KEY || "your_secret_key"; // Use environme
 const SALT_ROUNDS = 10; // Number of salt rounds for bcrypt
 
 app.use(express.json());
-app.use(cors()); // Enable CORS for all routes
+
+app.use(
+  cors({
+    origin: "https://comp4537-term-project.netlify.app", // Allow specific origin
+    methods: "GET,POST,PUT,DELETE,OPTIONS", // Define allowed methods
+    allowedHeaders: "Content-Type,Authorization", // Allow headers as needed
+  })
+);
 
 // Global request logger middleware
 app.use((req, res, next) => {
