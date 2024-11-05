@@ -67,13 +67,11 @@ function ImageTextGenerator() {
       }
 
       const response = await axios.post(
-        "https://cadan.xyz/fastapi//generate-caption/",
+        "http://146.190.45.54/generate-caption/", // Updated URL
         formData,
         {
-          // Update URL if necessary
           headers: {
-            Authorization: `Bearer ${token}`,
-            // "Content-Type": "multipart/form-data", // Let Axios set this automatically
+            Authorization: `Bearer ${token}`, 
           },
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round(
