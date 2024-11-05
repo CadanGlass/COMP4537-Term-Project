@@ -14,7 +14,7 @@ function Protected() {
     }
 
     // Fetch protected data using the JWT token
-    fetch("https://cadan.xyz/app4/protected", {
+    fetch("http://localhost:3003/protected", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
