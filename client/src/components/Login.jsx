@@ -10,7 +10,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:3003/login", {
+      const response = await fetch("https://cadan.xyz/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

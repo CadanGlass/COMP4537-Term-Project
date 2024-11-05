@@ -40,7 +40,7 @@ function Admin() {
     }
 
     // Fetch admin data using the JWT token
-    fetch("http://localhost:3003/admin", {
+    fetch("https://cadan.xyz/admin", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
