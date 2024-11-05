@@ -10,7 +10,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("https://cadan.xyz/app4/login", {
+      const response = await fetch("http://146.190.45.54/login", { // Updated URL
         method: "POST",
         headers: {
           "Content-Type": "application/json",

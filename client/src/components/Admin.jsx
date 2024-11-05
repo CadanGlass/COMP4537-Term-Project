@@ -40,7 +40,7 @@ function Admin() {
     }
 
     // Fetch admin data using the JWT token
-    fetch("https://cadan.xyz/app4/admin", {
+    fetch("http://146.190.45.54/admin", { // Updated URL
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
