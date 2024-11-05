@@ -11,7 +11,7 @@ function Register() {
     e.preventDefault();
 
     try {
-      const response = await fetch("https://cadan.xyz/app4/register", {
+      const response = await fetch("https://146.190.45.54/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
