@@ -1,7 +1,23 @@
-// src/components/ImageTextGenerator.js
+// src/components/ImageTextGenerator.jsx
 
 import React, { useState } from "react";
-import axios from "axios"; // Ensure Axios is installed: npm install axios
+import axios from "axios";
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  LinearProgress,
+  CircularProgress,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+
+// Styled component for the file input label
+const Input = styled("input")({
+  display: "none",
+});
 
 function ImageTextGenerator() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -71,7 +87,8 @@ function ImageTextGenerator() {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
           },
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round(
@@ -95,40 +112,107 @@ function ImageTextGenerator() {
   };
 
   return (
-    <div className="image-text-generator">
-      <h2>Image-to-Text Generator</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Select Image:</label>
-          <input type="file" accept="image/*" onChange={handleFileChange} />
-        </div>
-        {imagePreview && (
-          <div>
-            <img
-              src={imagePreview}
-              alt="Selected"
-              style={{ width: "100%", maxWidth: "300px", marginTop: "10px" }}
+    <Container maxWidth="sm">
+      <Box
+        sx={{
+          marginTop: 8,
+          padding: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          boxShadow: 3,
+          borderRadius: 2,
+          backgroundColor: "#fff",
+        }}
+      >
+        <Typography component="h2" variant="h5" gutterBottom>
+          Image-to-Text Generator
+        </Typography>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 1, width: "100%" }}
+          noValidate
+        >
+          <label htmlFor="contained-button-file">
+            <Input
+              accept="image/*"
+              id="contained-button-file"
+              type="file"
+              onChange={handleFileChange}
             />
-          </div>
-        )}
-        {uploadProgress > 0 && (
-          <div>
-            <progress value={uploadProgress} max="100" />
-            <span> {uploadProgress}%</span>
-          </div>
-        )}
-        <button type="submit" disabled={loading}>
-          {loading ? "Generating..." : "Generate Caption"}
-        </button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {caption && (
-        <div>
-          <h3>Generated Caption:</h3>
-          <p>{caption}</p>
-        </div>
-      )}
-    </div>
+            <Button
+              variant="contained"
+              component="span"
+              fullWidth
+              sx={{ mb: 2 }}
+            >
+              Select Image
+            </Button>
+          </label>
+          {selectedFile && (
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              Selected File: {selectedFile.name}
+            </Typography>
+          )}
+          {imagePreview && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mb: 2,
+              }}
+            >
+              <img
+                src={imagePreview}
+                alt="Selected"
+                style={{
+                  width: "100%",
+                  maxWidth: "300px",
+                  borderRadius: "8px",
+                }}
+              />
+            </Box>
+          )}
+          {uploadProgress > 0 && uploadProgress < 100 && (
+            <Box sx={{ width: "100%", mb: 2 }}>
+              <LinearProgress variant="determinate" value={uploadProgress} />
+              <Typography variant="body2" color="textSecondary">
+                Upload Progress: {uploadProgress}%
+              </Typography>
+            </Box>
+          )}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            sx={{ mb: 2 }}
+          >
+            {loading ? (
+              <>
+                <CircularProgress size={24} sx={{ mr: 1 }} />
+                Generating...
+              </>
+            ) : (
+              "Generate Caption"
+            )}
+          </Button>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {caption && (
+            <Alert severity="success">
+              <Typography variant="h6">Generated Caption:</Typography>
+              <Typography variant="body1">{caption}</Typography>
+            </Alert>
+          )}
+        </Box>
+      </Box>
+    </Container>
   );
 }
 
