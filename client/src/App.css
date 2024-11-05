@@ -1,0 +1,43 @@
+/* src/App.css */
+
+.image-text-generator {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.image-text-generator h2 {
+  margin-bottom: 15px;
+}
+
+.image-text-generator form {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-text-generator form div {
+  margin-bottom: 10px;
+}
+
+.image-text-generator button {
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.image-text-generator button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.image-text-generator h3 {
+  margin-top: 20px;
+}

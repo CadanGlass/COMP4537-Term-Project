@@ -1,3 +1,6 @@
+// src/App.js
+
+import React from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -7,10 +10,12 @@ import {
 } from "react-router-dom";
 
 import Login from "./components/Login";
-import Protected from "./components/Protected";
-import Admin from "./components/Admin";
-import Logout from "./components/Logout";
 import Register from "./components/Register";
+import Admin from "./components/Admin";
+import Protected from "./components/Protected";
+import Logout from "./components/Logout";
+import ImageTextGenerator from "./components/ImageTextGenerator"; // Import the new component
+import PrivateRoute from "./components/PrivateRoute"; // Import PrivateRoute
 
 function Home() {
   return (
@@ -28,6 +33,10 @@ function Home() {
         </li>
         <li>
           <Link to="/protected">Protected</Link>
+        </li>
+        <li>
+          <Link to="/image-text-generator">Image-to-Text Generator</Link>{" "}
+          {/* Add this link */}
         </li>
         <li>
           <Link to="/logout">Logout</Link>
@@ -48,6 +57,14 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/protected" element={<Protected />} />
+        <Route
+          path="/image-text-generator"
+          element={
+            <PrivateRoute>
+              <ImageTextGenerator />
+            </PrivateRoute>
+          }
+        />
         <Route path="/logout" element={<Logout />} />
         {/* Fallback route for undefined paths */}
         <Route path="*" element={<div>404 Not Found</div>} />
