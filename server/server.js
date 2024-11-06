@@ -153,9 +153,10 @@ app.get("/admin", verifyJWT, checkAdmin, (req, res) => {
   res.json({ message: "Welcome Admin!", username: req.user.username });
 });
 
-app.post("/test", (req, res) => {
-  res.json({ message: "Test successful" });
+app.get("/test", (req, res) => {
+  res.send("<h1>Test successful</h1>");
 });
+
 
 
 app.listen(process.env.PORT || 3003, () =>

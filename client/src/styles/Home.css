@@ -1,0 +1,19 @@
+/* src/styles/Home.css */
+
+.home-container {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: #f9f9f9;
+  min-height: calc(100vh - 80px); /* Adjust based on navbar height */
+}
+
+.home-title {
+  font-size: 3rem;
+  color: #333333;
+  margin-bottom: 1rem;
+}
+
+.home-description {
+  font-size: 1.25rem;
+  color: #666666;
+}
