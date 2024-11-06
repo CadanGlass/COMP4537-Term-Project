@@ -67,7 +67,7 @@ function ImageTextGenerator() {
       }
 
       const response = await axios.post(
-        "http://146.190.45.54/generate-caption/", // Updated URL
+        "https://146.190.45.54/generate-caption/", // Updated URL
         formData,
         {
           headers: {
