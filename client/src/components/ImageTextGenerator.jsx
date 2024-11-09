@@ -49,7 +49,6 @@ function ImageTextGenerator() {
     e.preventDefault();
 
     if (!selectedFile) {
-    if (!selectedFile) {
       setError("Please select an image file.");
       return;
     }
@@ -89,7 +88,6 @@ function ImageTextGenerator() {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
             "Content-Type": "multipart/form-data",
           },
           onUploadProgress: (progressEvent) => {
