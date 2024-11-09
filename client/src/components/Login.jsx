@@ -9,6 +9,7 @@ import {
   TextField,
   Button,
   Alert,
+  Link,
 } from "@mui/material";
 import { AuthContext } from "./Context/AuthContext"; // Ensure the path is correct
 
@@ -17,6 +18,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -63,6 +66,39 @@ const Login = () => {
       console.error("Login Error:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setForgotPasswordMessage("");
+    setError("");
+
+    if (!email) {
+      setError("Please enter your email address to reset your password.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://cadan.xyz/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setForgotPasswordMessage(
+          "Password reset email sent. Please check your inbox."
+        );
+      } else {
+        setError(data.message || "Failed to send reset email.");
+      }
+    } catch (error) {
+      console.error("Forgot Password Error:", error);
+      setError("Error sending reset email. Try again later.");
     }
   };
 
@@ -124,6 +160,13 @@ const Login = () => {
             </Alert>
           )}
 
+          {/* Display Success Message for Forgot Password */}
+          {forgotPasswordMessage && (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              {forgotPasswordMessage}
+            </Alert>
+          )}
+
           {/* Submit Button */}
           <Button
             type="submit"
@@ -135,6 +178,40 @@ const Login = () => {
           >
             {isLoading ? "Logging in..." : "Login"}
           </Button>
+
+          {/* Forgot Password Link */}
+          <Box sx={{ mt: 2 }}>
+            <Link
+              component="button"
+              variant="body2"
+              onClick={() => setForgotPassword(true)}
+            >
+              Forgot Password?
+            </Link>
+          </Box>
+
+          {/* Forgot Password Form */}
+          {forgotPassword && (
+            <Box>
+              <TextField
+                fullWidth
+                label="Enter your email to reset password"
+                variant="outlined"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                sx={{ mt: 2 }}
+              />
+              <Button
+                fullWidth
+                variant="contained"
+                color="secondary"
+                onClick={handleForgotPassword}
+                sx={{ mt: 1 }}
+              >
+                Send Reset Link
+              </Button>
+            </Box>
+          )}
         </Box>
       </Box>
     </Container>
