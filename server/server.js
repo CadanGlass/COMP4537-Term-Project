@@ -159,8 +159,9 @@ function checkAdmin(req, res, next) {
 // Protected Route (accessible to all authenticated users)
 app.get("/protected", verifyJWT, (req, res) => {
   console.log(`Protected route accessed by user: ${req.user.email}`);
-  res.json({ message: "Protected content", email: req.user.email });
+  res.json({ email: req.user.email });
 });
+
 
 // Admin-Only Route
 app.get("/admin", verifyJWT, checkAdmin, (req, res) => {
