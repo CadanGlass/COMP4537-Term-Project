@@ -72,8 +72,8 @@ app.post("/register", async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const sql = "INSERT INTO users (email, password, role) VALUES (?, ?, ?)";
-    await dbRun(sql, [email, hashedPassword, role || "user"]);
+    const sql = "INSERT INTO users (email, password, role, api) VALUES (?, ?, ?, ?)";
+    await dbRun(sql, [email, hashedPassword, role || "user", 20]); // Explicitly set api to 20
     console.log(`User registered: ${email}, role: ${role || "user"}`);
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
@@ -84,6 +84,7 @@ app.post("/register", async (req, res) => {
     res.status(500).json({ message: "Error registering user" });
   }
 });
+
 
 // Login Route
 app.post("/login", async (req, res) => {
