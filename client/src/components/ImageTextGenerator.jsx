@@ -149,8 +149,8 @@ function ImageTextGenerator() {
     }
   };
 
-  // Calculate remaining API calls
-  const remainingCalls = maxApiCalls - (apiCallCount || 0);
+  // Remove incorrect remainingCalls calculation
+  // const remainingCalls = maxApiCalls - (apiCallCount || 0);
 
   return (
     <Container maxWidth="sm">
@@ -174,10 +174,10 @@ function ImageTextGenerator() {
         <Box sx={{ width: "100%", mb: 2 }}>
           {apiCallCount === null ? (
             <LinearProgress />
-          ) : apiCallCount < maxApiCalls ? (
+          ) : apiCallCount > 0 ? (
             <Alert severity="info">
-              You have {remainingCalls} free API call
-              {remainingCalls !== 1 ? "s" : ""} remaining.
+              You have {apiCallCount} free API call
+              {apiCallCount !== 1 ? "s" : ""} remaining.
             </Alert>
           ) : (
             <Alert severity="warning">
