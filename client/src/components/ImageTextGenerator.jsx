@@ -6,7 +6,6 @@ import {
   Container,
   Box,
   Typography,
-  TextField,
   Button,
   Alert,
   LinearProgress,
@@ -21,24 +20,47 @@ const Input = styled("input")({
 
 function ImageTextGenerator() {
   const [selectedFile, setSelectedFile] = useState(null);
+  const [imageData, setImageData] = useState(null); // To store base64 image data
   const [caption, setCaption] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [imagePreview, setImagePreview] = useState(null);
 
-  // New states for API call tracking
-  const [apiCallCount, setApiCallCount] = useState(0);
+  // States for API call tracking
+  const [apiCallCount, setApiCallCount] = useState(null); // Initialize as null to indicate loading
   const maxApiCalls = 20;
   const [maxedOut, setMaxedOut] = useState(false);
 
+  // Fetch the current API count from the server on component mount
   useEffect(() => {
-    // Retrieve the API call count from localStorage on component mount
-    const count = parseInt(localStorage.getItem("apiCallCount")) || 0;
-    setApiCallCount(count);
-    if (count >= maxApiCalls) {
-      setMaxedOut(true);
-    }
+    const fetchApiCount = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("You need to log in to use this feature.");
+          return;
+        }
+
+        const response = await axios.get(
+          "https://cadan.xyz/get-api-count",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const { apiCount, maxedOut } = response.data;
+        setApiCallCount(apiCount);
+        setMaxedOut(maxedOut);
+      } catch (err) {
+        console.error("Error fetching API count:", err);
+        setError("Failed to retrieve API call information.");
+      }
+    };
+
+    fetchApiCount();
   }, []);
 
   const handleFileChange = (e) => {
@@ -52,17 +74,21 @@ function ImageTextGenerator() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
+        // Extract base64 string without the prefix
+        const base64String = reader.result.split(",")[1];
+        setImageData(base64String);
       };
       reader.readAsDataURL(file);
     } else {
       setImagePreview(null);
+      setImageData(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedFile) {
+    if (!selectedFile || !imageData) {
       setError("Please select an image file.");
       return;
     }
@@ -80,8 +106,9 @@ function ImageTextGenerator() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", selectedFile); // Ensure the field name is "file"
+    const payload = {
+      imageData, // Sending base64 string without the prefix
+    };
 
     setLoading(true);
     setError("");
@@ -97,14 +124,15 @@ function ImageTextGenerator() {
       }
 
       const response = await axios.post(
-        "https://4537llm.online/generate-caption/", // Updated URL
-        formData,
+        "https://4537llm.online/generate-caption",
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
           },
           onUploadProgress: (progressEvent) => {
+            // Optional: If you're sending a large payload, track progress
             const percentCompleted = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
@@ -113,20 +141,14 @@ function ImageTextGenerator() {
         }
       );
 
-      setCaption(response.data.caption);
-
-      // Update API call count
-      const newCount = apiCallCount + 1;
-      setApiCallCount(newCount);
-      localStorage.setItem("apiCallCount", newCount);
-      if (newCount >= maxApiCalls) {
-        setMaxedOut(true);
-      }
+      const { caption, apiCount, maxedOut } = response.data;
+      setCaption(caption);
+      setApiCallCount(apiCount);
+      setMaxedOut(maxedOut);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.detail) {
-        setError(err.response.data.detail);
-        // Optionally, check if the error is due to maxed out API calls
-        if (err.response.data.detail.toLowerCase().includes("max")) {
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+        if (err.response.data.message.toLowerCase().includes("max")) {
           setMaxedOut(true);
         }
       } else {
@@ -138,7 +160,7 @@ function ImageTextGenerator() {
   };
 
   // Calculate remaining API calls
-  const remainingCalls = maxApiCalls - apiCallCount;
+  const remainingCalls = maxApiCalls - (apiCallCount || 0);
 
   return (
     <Container maxWidth="sm">
@@ -160,7 +182,9 @@ function ImageTextGenerator() {
 
         {/* Display API Call Information */}
         <Box sx={{ width: "100%", mb: 2 }}>
-          {apiCallCount < maxApiCalls ? (
+          {apiCallCount === null ? (
+            <LinearProgress />
+          ) : apiCallCount > 0 ? (
             <Alert severity="info">
               You have {remainingCalls} free API call
               {remainingCalls !== 1 ? "s" : ""} remaining.
@@ -245,7 +269,7 @@ function ImageTextGenerator() {
             )}
           </Button>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity={maxedOut ? "warning" : "error"} sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
