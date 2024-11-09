@@ -1,15 +1,19 @@
-import React from "react";
+// src/components/Logout.js
+
+import React, { useEffect, useContext } from "react";
+import { AuthContext } from "./Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 function Logout() {
+  const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login"); // Redirect to login page
-  };
+  useEffect(() => {
+    logout();
+    navigate("/login");
+  }, [logout, navigate]);
 
-  return <button onClick={handleLogout}>Logout</button>;
+  return null;
 }
 
 export default Logout;

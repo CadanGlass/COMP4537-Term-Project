@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from "react";
+// src/components/Protected.js
+
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../components/Context/AuthContext";
 
 function Protected() {
+  const { auth } = useContext(AuthContext);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Get the token from localStorage
-    const token = localStorage.getItem("token");
+    // Use the token from auth state
+    const token = auth.token;
 
     if (!token) {
       setError("No token found, please log in.");
@@ -32,11 +36,12 @@ function Protected() {
         setError("Error accessing protected route");
         console.error(error);
       });
-  }, []);
+  }, [auth.token]);
 
   return (
     <div>
-      <h1>Protected Route</h1>
+      <h1>Welcome, {auth.username}!</h1>
+      <h2>Protected Route</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
       {message && <p>{message}</p>}
     </div>

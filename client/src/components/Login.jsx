@@ -1,6 +1,6 @@
 // src/components/Login.js
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Container,
   Box,
@@ -9,15 +9,32 @@ import {
   Button,
   Alert,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../components/Context/AuthContext"; // Ensure the path is correct
 
 function Login() {
-  const [username, setUsername] = useState("");
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState(""); // Changed from username to email
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [token, setToken] = useState(null);
+  // Removed local token state as per previous implementation
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Simple email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password should be at least 6 characters long.");
+      return;
+    }
 
     try {
       const response = await fetch("https://cadan.xyz/login", {
@@ -25,23 +42,32 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }), // Updated payload
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Save the JWT token to localStorage (or sessionStorage)
-        localStorage.setItem("token", data.token);
-        setToken(data.token);
+        // Assuming the backend returns 'role' along with the token
+        // Example response: { token: "JWT_TOKEN", role: "admin" }
+        const { token, role } = data;
+
+        if (!token || !role) {
+          setError("Invalid response from server.");
+          return;
+        }
+
+        // Use AuthContext's login function
+        login(email, token, role); // Pass email, token, and role
         setError("");
-        console.log("Login successful");
+        navigate("/dashboard"); // Redirect to dashboard
       } else {
-        setError(data.message);
+        // Display error message from server or a default message
+        setError(data.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      setError("Error logging in");
-      console.error(error);
+      setError("Error logging in. Please try again later.");
+      console.error("Login Error:", error);
     }
   };
 
@@ -67,18 +93,22 @@ function Login() {
           onSubmit={handleSubmit}
           sx={{ mt: 1, width: "100%" }}
         >
+          {/* Email Field */}
           <TextField
             margin="normal"
             required
             fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
+            id="email"
+            label="Email Address"
+            name="email"
+            type="email" // Changed type to 'email'
+            autoComplete="email"
             autoFocus
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
+
+          {/* Password Field */}
           <TextField
             margin="normal"
             required
@@ -91,16 +121,15 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+
+          {/* Display Error Message */}
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {error}
             </Alert>
           )}
-          {token && (
-            <Alert severity="success" sx={{ mt: 2 }}>
-              Logged in successfully!
-            </Alert>
-          )}
+
+          {/* Submit Button */}
           <Button
             type="submit"
             fullWidth
