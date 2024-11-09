@@ -186,6 +186,53 @@ app.get("/protected", verifyJWT, (req, res) => {
   res.json({ email: req.user.email });
 });
 
+// Endpoint to decrement the API count by one
+app.post("/use-api", verifyJWT, async (req, res) => {
+  const userEmail = req.user.email;
+
+  try {
+    // Start a transaction to ensure atomicity
+    await dbRun("BEGIN TRANSACTION");
+
+    // Check the current API count
+    const selectSql = "SELECT api FROM users WHERE email = ?";
+    const user = await dbGet(selectSql, [userEmail]);
+
+    if (!user) {
+      await dbRun("ROLLBACK");
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (user.api <= 0) {
+      await dbRun("ROLLBACK");
+      return res.status(403).json({ message: "API usage limit reached." });
+    }
+
+    // Decrement the API count
+    const updateSql = "UPDATE users SET api = api - 1 WHERE email = ?";
+    await dbRun(updateSql, [userEmail]);
+
+    // Optionally, retrieve the updated API count
+    const updatedUser = await dbGet(selectSql, [userEmail]);
+
+    // Commit the transaction
+    await dbRun("COMMIT");
+
+    console.log(`API count decremented for user: ${userEmail}. Remaining API count: ${updatedUser.api}`);
+
+    res.json({
+      message: "API count decremented successfully.",
+      apiCount: updatedUser.api,
+      maxedOut: updatedUser.api <= 0,
+    });
+  } catch (err) {
+    // Rollback the transaction in case of error
+    await dbRun("ROLLBACK");
+    console.error("Error decrementing API count:", err.message);
+    res.status(500).json({ message: "Error decrementing API count." });
+  }
+});
+
 
 // Admin-Only Route to Get All Users and Their API Counts
 app.get("/admin", verifyJWT, checkAdmin, async (req, res) => {
