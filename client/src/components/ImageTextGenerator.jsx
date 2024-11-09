@@ -28,7 +28,6 @@ function ImageTextGenerator() {
 
   // States for API call tracking
   const [apiCallCount, setApiCallCount] = useState(null); // Initialize as null to indicate loading
-  const maxApiCalls = 20;
   const [maxedOut, setMaxedOut] = useState(false);
 
   // Fetch the current API count from the server on component mount
@@ -114,7 +113,8 @@ function ImageTextGenerator() {
         return;
       }
 
-      const response = await axios.post(
+      // 1. Generate Caption
+      const generateResponse = await axios.post(
         "https://4537llm.online/generate-caption/", // Ensure the trailing slash if required by your API
         formData,
         {
@@ -131,26 +131,63 @@ function ImageTextGenerator() {
         }
       );
 
-      const { caption, apiCount, maxedOut } = response.data;
+      const { caption } = generateResponse.data;
       setCaption(caption);
+
+      // 2. Decrement API Count
+      const decrementResponse = await axios.post(
+        "https://cadan.xyz/use-api",
+        {}, // No body required
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const { apiCount, maxedOut } = decrementResponse.data;
       setApiCallCount(apiCount);
       setMaxedOut(maxedOut);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.detail) {
-        setError(err.response.data.detail);
-        if (err.response.data.detail.toLowerCase().includes("max")) {
-          setMaxedOut(true);
+      console.error("Error during caption generation or API decrement:", err);
+
+      // Handle errors from /generate-caption
+      if (err.response) {
+        if (err.response.config.url.includes("/generate-caption")) {
+          setError(
+            err.response.data.detail ||
+              "Failed to generate caption. Please try again."
+          );
+        }
+        // Handle errors from /use-api
+        else if (err.response.config.url.includes("/use-api")) {
+          setError(
+            err.response.data.message ||
+              "Failed to decrement API count. Please try again."
+          );
+        } else {
+          setError("An unexpected error occurred.");
         }
       } else {
-        setError("Failed to generate caption.");
+        setError("Network error. Please check your connection.");
+      }
+
+      // Optionally, set maxedOut if decrement failed due to API limit
+      if (
+        err.response &&
+        err.response.data &&
+        err.response.data.message &&
+        err.response.data.message.toLowerCase().includes("limit")
+      ) {
+        setMaxedOut(true);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // Calculate remaining API calls
-  const remainingCalls = maxApiCalls - (apiCallCount || 0);
+  // Calculate remaining API calls directly from apiCallCount
+  const remainingCalls = apiCallCount;
 
   return (
     <Container maxWidth="sm">
@@ -174,15 +211,15 @@ function ImageTextGenerator() {
         <Box sx={{ width: "100%", mb: 2 }}>
           {apiCallCount === null ? (
             <LinearProgress />
-          ) : apiCallCount < maxApiCalls ? (
+          ) : remainingCalls > 0 ? (
             <Alert severity="info">
               You have {remainingCalls} free API call
               {remainingCalls !== 1 ? "s" : ""} remaining.
             </Alert>
           ) : (
             <Alert severity="warning">
-              You have reached the maximum of {maxApiCalls} free API calls.
-              Additional calls may be subject to charges.
+              You have reached the maximum of 20 free API calls. Additional
+              calls may be subject to charges.
             </Alert>
           )}
         </Box>
