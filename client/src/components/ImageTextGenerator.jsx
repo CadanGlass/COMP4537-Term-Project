@@ -1,6 +1,6 @@
 // src/components/ImageTextGenerator.jsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Container,
@@ -26,6 +26,20 @@ function ImageTextGenerator() {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [imagePreview, setImagePreview] = useState(null);
+
+  // New states for API call tracking
+  const [apiCallCount, setApiCallCount] = useState(0);
+  const maxApiCalls = 20;
+  const [maxedOut, setMaxedOut] = useState(false);
+
+  useEffect(() => {
+    // Retrieve the API call count from localStorage on component mount
+    const count = parseInt(localStorage.getItem("apiCallCount")) || 0;
+    setApiCallCount(count);
+    if (count >= maxApiCalls) {
+      setMaxedOut(true);
+    }
+  }, []);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -100,9 +114,21 @@ function ImageTextGenerator() {
       );
 
       setCaption(response.data.caption);
+
+      // Update API call count
+      const newCount = apiCallCount + 1;
+      setApiCallCount(newCount);
+      localStorage.setItem("apiCallCount", newCount);
+      if (newCount >= maxApiCalls) {
+        setMaxedOut(true);
+      }
     } catch (err) {
       if (err.response && err.response.data && err.response.data.detail) {
         setError(err.response.data.detail);
+        // Optionally, check if the error is due to maxed out API calls
+        if (err.response.data.detail.toLowerCase().includes("max")) {
+          setMaxedOut(true);
+        }
       } else {
         setError("Failed to generate caption.");
       }
@@ -110,6 +136,9 @@ function ImageTextGenerator() {
       setLoading(false);
     }
   };
+
+  // Calculate remaining API calls
+  const remainingCalls = maxApiCalls - apiCallCount;
 
   return (
     <Container maxWidth="sm">
@@ -128,6 +157,22 @@ function ImageTextGenerator() {
         <Typography component="h2" variant="h5" gutterBottom>
           Image-to-Text Generator
         </Typography>
+
+        {/* Display API Call Information */}
+        <Box sx={{ width: "100%", mb: 2 }}>
+          {apiCallCount < maxApiCalls ? (
+            <Alert severity="info">
+              You have {remainingCalls} free API call
+              {remainingCalls !== 1 ? "s" : ""} remaining.
+            </Alert>
+          ) : (
+            <Alert severity="warning">
+              You have reached the maximum of {maxApiCalls} free API calls.
+              Additional calls may be subject to charges.
+            </Alert>
+          )}
+        </Box>
+
         <Box
           component="form"
           onSubmit={handleSubmit}
