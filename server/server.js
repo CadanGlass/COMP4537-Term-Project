@@ -186,10 +186,27 @@ app.get("/protected", verifyJWT, (req, res) => {
 });
 
 
-// Admin-Only Route
-app.get("/admin", verifyJWT, checkAdmin, (req, res) => {
+// Admin-Only Route to Get All Users and Their API Counts
+app.get("/admin", verifyJWT, checkAdmin, async (req, res) => {
   console.log(`Admin route accessed by admin: ${req.user.email}`);
-  res.json({ message: "Welcome Admin!", email: req.user.email });
+
+  try {
+    const sqlSelect = "SELECT id, email, role, api FROM users";
+    db.all(sqlSelect, [], (err, rows) => {
+      if (err) {
+        console.error("Error fetching users:", err.message);
+        return res.status(500).json({ message: "Error fetching users." });
+      }
+
+      res.json({
+        message: "User data fetched successfully.",
+        users: rows, // Array of user objects
+      });
+    });
+  } catch (err) {
+    console.error("Error in /admin:", err.message);
+    res.status(500).json({ message: "Error fetching user data." });
+  }
 });
 
 // Test Route
