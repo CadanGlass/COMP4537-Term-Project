@@ -32,8 +32,9 @@ function Register() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password should be at least 6 characters long.");
+    // Optionally, ensure the password field is not empty
+    if (!password) {
+      setError("Password is required.");
       setSuccessMessage("");
       return;
     }

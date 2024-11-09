@@ -131,15 +131,12 @@ app.post("/register", async (req, res) => {
   // Validate email format (optional but recommended)
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!email || !emailRegex.test(email)) {
-    return res
-      .status(400)
-      .json({ message: "Invalid or missing email address." });
+    return res.status(400).json({ message: "Invalid or missing email address." });
   }
 
-  if (!password || password.length < 6) {
-    return res
-      .status(400)
-      .json({ message: "Password must be at least 6 characters long." });
+  // Optionally, ensure the password field is not empty
+  if (!password) {
+    return res.status(400).json({ message: "Password is required." });
   }
 
   // Hash the password before storing it
@@ -166,6 +163,7 @@ app.post("/register", async (req, res) => {
     res.status(201).json({ message: "User registered successfully" });
   });
 });
+
 
 // Login route (validate user using SQLite DB and compare hashed passwords)
 app.post("/login", async (req, res) => {
