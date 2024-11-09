@@ -20,7 +20,6 @@ const Input = styled("input")({
 
 function ImageTextGenerator() {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [imageData, setImageData] = useState(null); // To store base64 image data
   const [caption, setCaption] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -71,21 +70,17 @@ function ImageTextGenerator() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        // Extract base64 string without the prefix
-        const base64String = reader.result.split(",")[1];
-        setImageData(base64String);
       };
       reader.readAsDataURL(file);
     } else {
       setImagePreview(null);
-      setImageData(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedFile || !imageData) {
+    if (!selectedFile) {
       setError("Please select an image file.");
       return;
     }
@@ -103,9 +98,8 @@ function ImageTextGenerator() {
       return;
     }
 
-    const payload = {
-      imageData, // Sending base64 string without the prefix
-    };
+    const formData = new FormData();
+    formData.append("file", selectedFile); // Ensure the field name is "file"
 
     setLoading(true);
     setError("");
@@ -121,15 +115,14 @@ function ImageTextGenerator() {
       }
 
       const response = await axios.post(
-        "https://4537llm.online/generate-caption",
-        payload,
+        "https://4537llm.online/generate-caption/", // Ensure the trailing slash if required by your API
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
           },
           onUploadProgress: (progressEvent) => {
-            // Optional: If you're sending a large payload, track progress
             const percentCompleted = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
@@ -143,9 +136,9 @@ function ImageTextGenerator() {
       setApiCallCount(apiCount);
       setMaxedOut(maxedOut);
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
-        if (err.response.data.message.toLowerCase().includes("max")) {
+      if (err.response && err.response.data && err.response.data.detail) {
+        setError(err.response.data.detail);
+        if (err.response.data.detail.toLowerCase().includes("max")) {
           setMaxedOut(true);
         }
       } else {
@@ -181,7 +174,7 @@ function ImageTextGenerator() {
         <Box sx={{ width: "100%", mb: 2 }}>
           {apiCallCount === null ? (
             <LinearProgress />
-          ) : apiCallCount > 0 ? (
+          ) : apiCallCount < maxApiCalls ? (
             <Alert severity="info">
               You have {remainingCalls} free API call
               {remainingCalls !== 1 ? "s" : ""} remaining.
@@ -253,7 +246,7 @@ function ImageTextGenerator() {
             fullWidth
             variant="contained"
             color="primary"
-            disabled={loading}
+            disabled={loading || maxedOut}
             sx={{ mb: 2 }}
           >
             {loading ? (
