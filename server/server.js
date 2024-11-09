@@ -39,7 +39,8 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'user'
+      role TEXT NOT NULL DEFAULT 'user',
+      api INTEGER NOT NULL DEFAULT 20
     )`,
     (err) => {
       if (err) {
@@ -146,6 +147,28 @@ function verifyJWT(req, res, next) {
     next();
   });
 }
+
+// Route to get the current API count for the authenticated user
+app.get("/get-api-count", verifyJWT, async (req, res) => {
+  console.log(`API count request by user: ${req.user.email}`);
+
+  try {
+    const sqlSelect = "SELECT api FROM users WHERE email = ?";
+    const user = await dbGet(sqlSelect, [req.user.email]);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.json({
+      apiCount: user.api,
+      maxedOut: user.api <= 0,
+    });
+  } catch (err) {
+    console.error("Error in /get-api-count:", err.message);
+    res.status(500).json({ message: "Error retrieving API count." });
+  }
+});
 
 // Middleware to check for admin role
 function checkAdmin(req, res, next) {
