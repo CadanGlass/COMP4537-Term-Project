@@ -110,25 +110,14 @@ function Protected() {
         our affordable subscription options for unlimited access.
       </p>
 
-      <button
-        onClick={() => (window.location.href = "/image-text-generator")}
-        style={{
-          marginTop: "40px",
-          padding: "15px 30px",
-          fontSize: "1.2em",
-          color: "#fff",
-          backgroundColor: "#4A90E2",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-          transition: "transform 0.2s",
-        }}
-        onMouseOver={(e) => (e.target.style.transform = "scale(1.05)")}
-        onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
-      >
-        Test Now
-      </button>
+      <div style={{ textAlign: "center", marginTop: "40px" }}>
+        <p style={{ fontSize: "1.5em", color: "#4A90E2", fontWeight: "bold" }}>
+          What are you waiting for?{" "}
+          <span style={{ color: "#333" }}>
+            Click on "Image-to-Text Generator" in the navbar to get started!
+          </span>
+        </p>
+      </div>
     </div>
   );
 }
