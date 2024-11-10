@@ -172,56 +172,6 @@ app.get("/get-api-count", verifyJWT, async (req, res) => {
   }
 });
 
-// Add this route to server.js
-
-
-
-app.post("/forgot-password", async (req, res) => {
-  const { email } = req.body;
-
-  // Check if the email is in the database
-  try {
-    const user = await dbGet("SELECT * FROM users WHERE email = ?", [email]);
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    // Generate a reset token with a short expiration (e.g., 15 minutes)
-    const resetToken = jwt.sign({ email: user.email }, SECRET_KEY, { expiresIn: "15m" });
-
-    // Log reset token (for development); you would send this via email
-    console.log(`Reset token for ${email}: ${resetToken}`);
-
-    // Email setup (configure with real email service in production)
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Password Reset",
-      text: `You requested a password reset. Use this link to reset your password: https://cadan.xyz/reset-password?token=${resetToken}`,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).json({ message: "Error sending email." });
-      }
-      res.json({ message: "Password reset email sent." });
-    });
-  } catch (err) {
-    console.error("Forgot Password Error:", err.message);
-    res.status(500).json({ message: "Internal server error." });
-  }
-});
-
-
 // Middleware to check for admin role
 function checkAdmin(req, res, next) {
   if (req.user.role !== "admin") {
