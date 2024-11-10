@@ -1,5 +1,14 @@
 // server.js
 
+//static rendering for reset password functionality page
+const path = require("path");
+app.use(express.static(path.join(__dirname, "../client/dist"))); // Adjust the path if your build folder is elsewhere
+
+// The "catchall" handler: for any request that doesn't match an API route, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
+
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
