@@ -1,7 +1,6 @@
-// src/components/Login.js
+// src/components/ResetPasswordRequest.js
 
-import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Import Link
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -10,58 +9,47 @@ import {
   Button,
   Alert,
 } from "@mui/material";
-import { AuthContext } from "./Context/AuthContext"; // Ensure the path is correct
 
-const Login = () => {
+const ResetPasswordRequest = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e) => {
+  const handleRequest = async (e) => {
     e.preventDefault();
 
+    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!email || !emailRegex.test(email)) {
       setError("Please enter a valid email address.");
       return;
     }
 
     setIsLoading(true);
+    setError("");
+    setMessage("");
 
     try {
-      const response = await fetch("https://cadan.xyz/login", {
+      const response = await fetch("https://cadan.xyz/request-reset-password", {
         // Ensure the URL is correct
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        const { token, role } = data;
-
-        if (!token || !role) {
-          setError("Invalid response from server.");
-          setIsLoading(false);
-          return;
-        }
-
-        login(email, token, role);
-        setError("");
-        navigate("/dashboard");
+        setMessage(data.message);
       } else {
-        setError(data.message || "Login failed. Please try again.");
+        setError(data.message || "Failed to request password reset.");
       }
-    } catch (error) {
-      setError("Error logging in. Please try again later.");
-      console.error("Login Error:", error);
+    } catch (err) {
+      setError("Error requesting password reset. Please try again later.");
+      console.error("Reset Password Request Error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -82,11 +70,11 @@ const Login = () => {
         }}
       >
         <Typography component="h1" variant="h5" gutterBottom>
-          Login
+          Reset Password
         </Typography>
         <Box
           component="form"
-          onSubmit={handleSubmit}
+          onSubmit={handleRequest}
           sx={{ mt: 1, width: "100%" }}
         >
           {/* Email Field */}
@@ -95,7 +83,7 @@ const Login = () => {
             required
             fullWidth
             id="email"
-            label="Email Address"
+            label="Enter your registered Email"
             name="email"
             type="email"
             autoComplete="email"
@@ -104,21 +92,12 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          {/* Password Field */}
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          {/* Display Error Message */}
+          {/* Display Message or Error */}
+          {message && (
+            <Alert severity="success" sx={{ mt: 2 }}>
+              {message}
+            </Alert>
+          )}
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {error}
@@ -134,18 +113,7 @@ const Login = () => {
             sx={{ mt: 3, mb: 2 }}
             disabled={isLoading}
           >
-            {isLoading ? "Logging in..." : "Login"}
-          </Button>
-
-          {/* Forgot Password Link */}
-          <Button
-            component={Link}
-            to="/request-reset-password"
-            variant="text"
-            color="secondary"
-            sx={{ mt: 1 }}
-          >
-            Forgot Password?
+            {isLoading ? "Sending..." : "Send Reset Link"}
           </Button>
         </Box>
       </Box>
@@ -153,4 +121,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ResetPasswordRequest;

@@ -12,6 +12,8 @@ import ImageTextGenerator from "./components/ImageTextGenerator";
 import PrivateRoute from "./components/PrivateRoute";
 import { AuthProvider } from "./components/Context/AuthContext";
 import { Container, Box, Typography } from "@mui/material";
+import ResetPassword from "./components/ResetPassword";
+import ResetPasswordRequest from "./components/ResetPasswordRequest";
 
 function App() {
   return (
@@ -23,6 +25,11 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route
+              path="/request-reset-password"
+              element={<ResetPasswordRequest />}
+            />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* Protected Routes */}
             <Route
               path="/dashboard"

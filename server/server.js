@@ -7,15 +7,18 @@ const bcrypt = require("bcrypt");
 const sqlite3 = require("sqlite3").verbose();
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const util = require("util"); // To promisify SQLite methods
+const util = require("util");
 
 const app = express();
 const db = new sqlite3.Database("./database.db");
 
 // Configuration
 const SECRET_KEY = process.env.SECRET_KEY || "your_secret_key";
+const RESET_PASSWORD_SECRET =
+  process.env.RESET_PASSWORD_SECRET || "your_reset_password_secret";
 const SALT_ROUNDS = 10;
 const PORT = process.env.PORT || 3003;
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
 // Middleware
 app.use(express.json());
@@ -32,6 +35,7 @@ app.use((req, res, next) => {
 // Promisify SQLite methods for async/await
 const dbGet = util.promisify(db.get).bind(db);
 const dbRun = util.promisify(db.run).bind(db);
+const dbAll = util.promisify(db.all).bind(db);
 
 // Initialize the database and create the users table if it doesn't exist
 db.serialize(() => {
@@ -53,6 +57,28 @@ db.serialize(() => {
   );
 });
 
+// Configure Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_SERVICE, // e.g., 'gmail'
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Utility function to send reset email
+const sendResetEmail = async (email, token) => {
+  const resetLink = `${CLIENT_URL}/reset-password?token=${token}`;
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Password Reset Request",
+    text: `You requested a password reset. Click the link below to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.`,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
 // Register Route
 app.post("/register", async (req, res) => {
   console.log("Register attempt with data:", req.body);
@@ -73,7 +99,8 @@ app.post("/register", async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const sql = "INSERT INTO users (email, password, role, api) VALUES (?, ?, ?, ?)";
+    const sql =
+      "INSERT INTO users (email, password, role, api) VALUES (?, ?, ?, ?)";
     await dbRun(sql, [email, hashedPassword, role || "user", 20]); // Explicitly set api to 20
     console.log(`User registered: ${email}, role: ${role || "user"}`);
     res.status(201).json({ message: "User registered successfully" });
@@ -85,7 +112,6 @@ app.post("/register", async (req, res) => {
     res.status(500).json({ message: "Error registering user" });
   }
 });
-
 
 // Login Route
 app.post("/login", async (req, res) => {
@@ -219,7 +245,9 @@ app.post("/use-api", verifyJWT, async (req, res) => {
     // Commit the transaction
     await dbRun("COMMIT");
 
-    console.log(`API count decremented for user: ${userEmail}. Remaining API count: ${updatedUser.api}`);
+    console.log(
+      `API count decremented for user: ${userEmail}. Remaining API count: ${updatedUser.api}`
+    );
 
     res.json({
       message: "API count decremented successfully.",
@@ -234,27 +262,106 @@ app.post("/use-api", verifyJWT, async (req, res) => {
   }
 });
 
-
 // Admin-Only Route to Get All Users and Their API Counts
 app.get("/admin", verifyJWT, checkAdmin, async (req, res) => {
   console.log(`Admin route accessed by admin: ${req.user.email}`);
 
   try {
     const sqlSelect = "SELECT id, email, role, api FROM users";
-    db.all(sqlSelect, [], (err, rows) => {
-      if (err) {
-        console.error("Error fetching users:", err.message);
-        return res.status(500).json({ message: "Error fetching users." });
-      }
-
-      res.json({
-        message: "User data fetched successfully.",
-        users: rows, // Array of user objects
-      });
+    const users = await dbAll(sqlSelect, []);
+    res.json({
+      message: "User data fetched successfully.",
+      users, // Array of user objects
     });
   } catch (err) {
-    console.error("Error in /admin:", err.message);
+    console.error("Error fetching users:", err.message);
     res.status(500).json({ message: "Error fetching user data." });
+  }
+});
+
+// Password Reset Request Route (No Token Storage)
+app.post("/request-reset-password", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res
+      .status(400)
+      .json({ message: "Email is required to reset password." });
+  }
+
+  try {
+    const sql = "SELECT * FROM users WHERE email = ?";
+    const user = await dbGet(sql, [email]);
+
+    if (!user) {
+      // For security, do not reveal whether the email exists
+      return res
+        .status(200)
+        .json({
+          message: "If that email is registered, a reset link has been sent.",
+        });
+    }
+
+    // Generate a reset token (JWT)
+    const resetToken = jwt.sign({ email }, RESET_PASSWORD_SECRET, {
+      expiresIn: "1h",
+    });
+
+    // Send the reset email
+    await sendResetEmail(email, resetToken);
+
+    res
+      .status(200)
+      .json({
+        message: "If that email is registered, a reset link has been sent.",
+      });
+  } catch (err) {
+    console.error("Error in /request-reset-password:", err.message);
+    res.status(500).json({ message: "Error requesting password reset." });
+  }
+});
+
+// Reset Password Route (No Token Storage)
+app.post("/reset-password", async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res
+      .status(400)
+      .json({ message: "Token and new password are required." });
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, RESET_PASSWORD_SECRET);
+    const email = decoded.email;
+
+    // Retrieve the user
+    const sql = "SELECT * FROM users WHERE email = ?";
+    const user = await dbGet(sql, [email]);
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset token." });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+    // Update the user's password
+    const updateSql = "UPDATE users SET password = ? WHERE email = ?";
+    await dbRun(updateSql, [hashedPassword, email]);
+
+    res.status(200).json({ message: "Password has been reset successfully." });
+  } catch (err) {
+    console.error("Error in /reset-password:", err.message);
+    if (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError") {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset token." });
+    }
+    res.status(500).json({ message: "Error resetting password." });
   }
 });
 
