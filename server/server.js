@@ -6,6 +6,7 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const sqlite3 = require("sqlite3").verbose();
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 const util = require("util"); // To promisify SQLite methods
 
 const app = express();
@@ -173,7 +174,7 @@ app.get("/get-api-count", verifyJWT, async (req, res) => {
 
 // Add this route to server.js
 
-const nodemailer = require("nodemailer");
+
 
 app.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
