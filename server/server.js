@@ -20,7 +20,6 @@ const RESET_PASSWORD_SECRET =
 const SALT_ROUNDS = 10;
 const PORT = process.env.PORT || 3003;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
-const TOKEN_EXPIRATION = '1h'; // Set token to expire after 24 hours
 
 // Middleware
 app.use(express.json());
@@ -145,14 +144,10 @@ app.post("/login", async (req, res) => {
 
     // Create JWT payload
     const payload = { email: user.email, role: user.role };
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: TOKEN_EXPIRATION }); // Set expiration
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "1h" }); // Token valid for 1 hour
 
     console.log(`User logged in: ${email}, role: ${user.role}`);
-    res.json({ 
-      token, 
-      role: user.role,
-      expiresIn: 24 * 60 * 60 * 1000 // 24 hours in milliseconds
-    });
+    res.json({ token, role: user.role });
   } catch (err) {
     console.error("Error during login:", err.message);
     res.status(500).json({ message: "Internal server error." });
