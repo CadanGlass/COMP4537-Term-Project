@@ -1,7 +1,5 @@
-// src/components/Login.js
-
+// src/components/Login.jsx
 import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Import Link
 import {
   Container,
   Box,
@@ -9,87 +7,79 @@ import {
   TextField,
   Button,
   Alert,
+  Link,
+  Paper,
 } from "@mui/material";
-import { AuthContext } from "./Context/AuthContext"; // Ensure the path is correct
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { AuthContext } from "./Context/AuthContext";
+import axios from "axios";
+import { useTheme } from '@mui/material/styles';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    setIsLoading(true);
+    setLoading(true);
+    setError("");
 
     try {
-      const response = await fetch("https://cadan.xyz/login", {
-        // Ensure the URL is correct
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+      const response = await axios.post("https://cadan.xyz/login", {
+        email,
+        password,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        const { token, role } = data;
-
-        if (!token || !role) {
-          setError("Invalid response from server.");
-          setIsLoading(false);
-          return;
-        }
-
-        login(email, token, role);
-        setError("");
+      if (response.data.token) {
+        login(email, response.data.token);
         navigate("/dashboard");
-      } else {
-        setError(data.message || "Login failed. Please try again.");
       }
-    } catch (error) {
-      setError("Error logging in. Please try again later.");
-      console.error("Login Error:", error);
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.message || "An error occurred during login."
+      );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <Container maxWidth="sm">
-      <Box
+      <Paper
+        elevation={3}
         sx={{
-          marginTop: 8,
-          padding: 4,
+          mt: 8,
+          p: 4,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          boxShadow: 3,
+          bgcolor: theme.palette.mode === 'light' ? '#ffffff' : '#1e1e1e',
           borderRadius: 2,
-          backgroundColor: "#fff",
         }}
       >
-        <Typography component="h1" variant="h5" gutterBottom>
+        <Typography 
+          component="h1" 
+          variant="h5" 
+          gutterBottom
+          sx={{ 
+            color: theme.palette.mode === 'light' ? '#333333' : '#ffffff',
+            fontWeight: 600 
+          }}
+        >
           Login
         </Typography>
+        
         <Box
           component="form"
           onSubmit={handleSubmit}
           sx={{ mt: 1, width: "100%" }}
         >
-          {/* Email Field */}
           <TextField
             margin="normal"
             required
@@ -102,9 +92,28 @@ const Login = () => {
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={{
+              '& .MuiInputBase-root': {
+                color: theme.palette.mode === 'light' ? '#333333' : '#ffffff',
+                backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#2d2d2d',
+              },
+              '& .MuiInputLabel-root': {
+                color: theme.palette.mode === 'light' ? '#666666' : '#b3b3b3',
+              },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)',
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+              },
+            }}
           />
 
-          {/* Password Field */}
           <TextField
             margin="normal"
             required
@@ -116,39 +125,84 @@ const Login = () => {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            sx={{
+              '& .MuiInputBase-root': {
+                color: theme.palette.mode === 'light' ? '#333333' : '#ffffff',
+                backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#2d2d2d',
+              },
+              '& .MuiInputLabel-root': {
+                color: theme.palette.mode === 'light' ? '#666666' : '#b3b3b3',
+              },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)',
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+              },
+            }}
           />
 
-          {/* Display Error Message */}
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {error}
             </Alert>
           )}
 
-          {/* Submit Button */}
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            color="primary"
-            sx={{ mt: 3, mb: 2 }}
-            disabled={isLoading}
+            sx={{ 
+              mt: 3, 
+              mb: 2,
+              bgcolor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+              color: '#ffffff',
+              '&:hover': {
+                bgcolor: theme.palette.mode === 'light' ? '#1565c0' : '#64b5f6',
+              },
+            }}
+            disabled={loading}
           >
-            {isLoading ? "Logging in..." : "Login"}
+            {loading ? "Logging in..." : "Login"}
           </Button>
 
-          {/* Forgot Password Link */}
-          <Button
-            component={Link}
-            to="/request-reset-password"
-            variant="text"
-            color="secondary"
-            sx={{ mt: 1 }}
-          >
-            Forgot Password?
-          </Button>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Link
+              component={RouterLink}
+              to="/request-reset-password"
+              variant="body2"
+              sx={{
+                color: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              Forgot password?
+            </Link>
+            <Link
+              component={RouterLink}
+              to="/register"
+              variant="body2"
+              sx={{
+                color: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              Don't have an account? Sign Up
+            </Link>
+          </Box>
         </Box>
-      </Box>
+      </Paper>
     </Container>
   );
 };
