@@ -103,7 +103,7 @@ function Admin() {
           alignItems: "center",
           boxShadow: 3,
           borderRadius: 2,
-          backgroundColor: "#fff",
+          bgcolor: 'background.paper',
         }}
       >
         <Typography component="h1" variant="h4" gutterBottom>

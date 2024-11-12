@@ -114,7 +114,7 @@ function Protected() {
         <p style={{ fontSize: "1.5em", color: "#4A90E2", fontWeight: "bold" }}>
           What are you waiting for?{" "}
           <span style={{ color: "#333" }}>
-            Click on "Image-to-Text Generator" in the navbar to get started!
+            Click on "Generator" in the navbar to get started!
           </span>
         </p>
       </div>

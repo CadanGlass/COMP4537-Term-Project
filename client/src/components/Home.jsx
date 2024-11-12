@@ -17,22 +17,35 @@ import SpeedIcon from "@mui/icons-material/Speed";
 import SecurityIcon from "@mui/icons-material/Security";
 import { Link as RouterLink } from "react-router-dom"; // Import Link from react-router-dom
 import logo from "../assets/logo.png";
+import { useTheme as useMuiTheme } from '@mui/material/styles';
+import ImageSearchIcon from '@mui/icons-material/ImageSearch';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 
 function Home() {
+  const theme = useMuiTheme();
+
   return (
     <Container maxWidth="lg">
       {/* Hero Section */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          padding: 4,
-          backgroundColor: "#e3f2fd",
-          borderRadius: 2,
+          display: 'flex',
+          alignItems: 'center',
+          padding: { xs: 3, md: 6 },
+          backgroundColor: theme.palette.mode === 'light' ? '#e3f2fd' : 'rgba(25, 118, 210, 0.08)',
+          borderRadius: 4,
           mt: 4,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: theme.palette.mode === 'light' 
+              ? '0 4px 20px rgba(0,0,0,0.1)'
+              : '0 4px 20px rgba(0,0,0,0.5)',
+          },
         }}
       >
-        <Grid container spacing={4}>
+        <Grid container spacing={4} alignItems="center">
           {/* Text Content */}
           <Grid item xs={12} md={6}>
             <Typography variant="h3" component="h1" gutterBottom>
@@ -63,47 +76,182 @@ function Home() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 2,
+                gap: 3,
                 padding: 2,
-                backgroundColor: "transparent", // Remove background color
               }}
             >
-              {/* Logo */}
+              {/* Updated Logo */}
               <Box
-                component="img"
-                src={logo} // Use the imported logo here
-                alt="Image to Text Generator"
                 sx={{
-                  width: "60%",
-                  maxWidth: 150,
-                  height: "auto",
-                  mb: 2,
+                  position: 'relative',
+                  width: '100%',
+                  maxWidth: 300,
+                  height: 300,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  mb: 4,
                 }}
-              />
-              {/* Key Features List (No Box) */}
+              >
+                {/* Main Logo Container */}
+                <Box
+                  sx={{
+                    position: 'relative',
+                    width: 200,
+                    height: 200,
+                    borderRadius: '50%',
+                    background: theme.palette.mode === 'light'
+                      ? 'conic-gradient(from 45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)'
+                      : 'conic-gradient(from 45deg, #90caf9, #42a5f5, #90caf9, #42a5f5)',
+                    animation: 'spin 20s linear infinite',
+                    '@keyframes spin': {
+                      '0%': {
+                        transform: 'rotate(0deg)',
+                      },
+                      '100%': {
+                        transform: 'rotate(360deg)',
+                      }
+                    },
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      inset: '15px',
+                      borderRadius: '50%',
+                      background: theme.palette.mode === 'light' ? '#1976d2' : '#272727',
+                    },
+                  }}
+                >
+                  {/* Inner Rings */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: '30px',
+                      borderRadius: '50%',
+                      border: '4px solid transparent',
+                      borderTopColor: '#fff',
+                      borderLeftColor: '#fff',
+                      animation: 'spinReverse 10s linear infinite',
+                      '@keyframes spinReverse': {
+                        '0%': {
+                          transform: 'rotate(360deg)',
+                        },
+                        '100%': {
+                          transform: 'rotate(0deg)',
+                        }
+                      },
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: '45px',
+                      borderRadius: '50%',
+                      border: '4px solid transparent',
+                      borderBottomColor: '#fff',
+                      borderRightColor: '#fff',
+                      animation: 'spin 8s linear infinite',
+                    }}
+                  />
+                  {/* Center Text */}
+                  <Typography
+                    sx={{
+                      position: 'relative',
+                      fontSize: '72px',
+                      fontWeight: 'bold',
+                      color: '#fff',
+                      fontFamily: 'monospace',
+                      zIndex: 2,
+                      textShadow: '0 0 10px rgba(255,255,255,0.5)',
+                    }}
+                  >
+                    P
+                  </Typography>
+                </Box>
+                {/* Enhanced Glow Effect */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    background: theme.palette.mode === 'light'
+                      ? 'radial-gradient(circle, rgba(25,118,210,0.3) 0%, rgba(255,255,255,0) 70%)'
+                      : 'radial-gradient(circle, rgba(144,202,249,0.3) 0%, rgba(255,255,255,0) 70%)',
+                    filter: 'blur(30px)',
+                    zIndex: -1,
+                  }}
+                />
+              </Box>
+
+              {/* Key Features List with updated styling */}
               <Typography
                 variant="h6"
                 component="h2"
                 gutterBottom
-                sx={{ color: "#1976d2" }}
+                sx={{
+                  color: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                  fontWeight: 600,
+                  textAlign: 'center',
+                }}
               >
                 Key Features
               </Typography>
-              <ul style={{ paddingLeft: "20px", margin: 0, color: "#4a4a4a" }}>
+              <Box
+                component="ul"
+                sx={{
+                  listStyle: 'none',
+                  padding: 0,
+                  margin: 0,
+                  width: '100%',
+                  '& li': {
+                    color: theme.palette.text.primary,
+                    padding: '8px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    '&:before': {
+                      content: '"✓"',
+                      marginRight: '10px',
+                      color: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                      fontWeight: 'bold',
+                    },
+                  },
+                }}
+              >
                 <li>High-accuracy text extraction</li>
                 <li>Supports various image formats</li>
                 <li>Fast processing and instant results</li>
                 <li>User-friendly and intuitive interface</li>
                 <li>Perfect for document digitization</li>
-              </ul>
+              </Box>
             </Box>
           </Grid>
         </Grid>
       </Box>
 
       {/* Features Section */}
-      <Box sx={{ mt: 8 }}>
-        <Typography variant="h4" component="h2" align="center" gutterBottom>
+      <Box sx={{ mt: 12 }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          align="center" 
+          gutterBottom
+          sx={{
+            fontWeight: 'bold',
+            background: theme.palette.mode === 'light' 
+              ? 'linear-gradient(45deg, #1976d2, #dc004e)'
+              : 'linear-gradient(45deg, #90caf9, #f48fb1)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            color: 'transparent',
+            mb: 6,
+          }}
+        >
           Why Choose Our Generator?
         </Typography>
         <Grid container spacing={4} sx={{ mt: 2 }}>
@@ -213,10 +361,10 @@ function Home() {
       {/* How It Works Section */}
       <Box
         sx={{
-          mt: 8,
-          backgroundColor: "#f5f5f5",
-          padding: 4,
-          borderRadius: 2,
+          mt: 12,
+          backgroundColor: theme.palette.background.alternate,
+          padding: { xs: 3, md: 6 },
+          borderRadius: 4,
         }}
       >
         <Typography variant="h4" component="h2" align="center" gutterBottom>
@@ -372,12 +520,27 @@ function Home() {
       {/* Call-to-Action Section */}
       <Box
         sx={{
-          mt: 8,
-          padding: 4,
-          textAlign: "center",
-          backgroundColor: "#1976d2",
-          color: "#fff",
-          borderRadius: 2,
+          mt: 12,
+          mb: 6,
+          padding: { xs: 3, md: 6 },
+          textAlign: 'center',
+          background: theme.palette.mode === 'light'
+            ? 'linear-gradient(45deg, #1976d2, #dc004e)'
+            : 'linear-gradient(45deg, #90caf9, #f48fb1)',
+          color: '#fff',
+          borderRadius: 4,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(255,255,255,0.1)',
+            transform: 'skewY(-5deg)',
+          },
         }}
       >
         <Typography variant="h4" component="h2" gutterBottom>

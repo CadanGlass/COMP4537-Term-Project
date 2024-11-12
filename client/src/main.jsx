@@ -3,9 +3,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
-import theme from "./theme"; // Import the custom theme
+import { getTheme } from "./theme"; // Import getTheme function instead of default export
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline"; // Normalize styles across browsers
+
+const theme = getTheme('light'); // Create theme with light mode
 
 ReactDOM.render(
   <React.StrictMode>

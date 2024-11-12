@@ -200,7 +200,7 @@ function ImageTextGenerator() {
           alignItems: "center",
           boxShadow: 3,
           borderRadius: 2,
-          backgroundColor: "#fff",
+          bgcolor: 'background.paper', // Use theme background
         }}
       >
         <Typography component="h2" variant="h5" gutterBottom>
