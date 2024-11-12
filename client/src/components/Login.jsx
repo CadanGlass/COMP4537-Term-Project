@@ -36,7 +36,7 @@ const Login = () => {
       });
 
       if (response.data.token) {
-        login(email, response.data.token);
+        login(email, response.data.token, response.data.expiresIn);
         navigate("/dashboard");
       }
     } catch (err) {
