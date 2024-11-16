@@ -110,7 +110,7 @@ class Server {
     );
     this.app.post("/request-reset-password", this.handleRequestResetPassword);
     this.app.post("/reset-password", this.handleResetPassword);
-    this.app.post(
+    this.app.put(
       "/admin/promote",
       verifyJWT(this.authService),
       checkAdmin,

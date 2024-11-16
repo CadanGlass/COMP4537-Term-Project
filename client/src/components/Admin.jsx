@@ -129,7 +129,7 @@ function Admin() {
       setPromoting(true);
       const token = localStorage.getItem("token");
       
-      const response = await axios.post(
+      const response = await axios.put(
         "https://cadan.xyz/admin/promote",
         { userId },
         {
