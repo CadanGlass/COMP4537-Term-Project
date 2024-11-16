@@ -12,9 +12,12 @@ import {
   Select,
   InputLabel,
   FormControl,
+  Paper,
 } from "@mui/material";
+import { useTheme } from '@mui/material/styles';
 
 function Register() {
+  const theme = useTheme();
   const [email, setEmail] = useState(""); // Changed from username to email
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user"); // Default to 'user' role
@@ -69,21 +72,30 @@ function Register() {
 
   return (
     <Container maxWidth="sm">
-      <Box
+      <Paper
+        elevation={3}
         sx={{
-          marginTop: 8,
-          padding: 4,
+          mt: 8,
+          p: 4,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          boxShadow: 3,
+          bgcolor: theme.palette.mode === 'light' ? '#ffffff' : '#1e1e1e',
           borderRadius: 2,
-          backgroundColor: "#fff",
         }}
       >
-        <Typography component="h1" variant="h5" gutterBottom>
+        <Typography 
+          component="h1" 
+          variant="h5" 
+          gutterBottom
+          sx={{ 
+            color: theme.palette.mode === 'light' ? '#333333' : '#ffffff',
+            fontWeight: 600 
+          }}
+        >
           Register
         </Typography>
+
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -102,6 +114,26 @@ function Register() {
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={{
+              '& .MuiInputBase-root': {
+                color: theme.palette.mode === 'light' ? '#333333' : '#ffffff',
+                backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#2d2d2d',
+              },
+              '& .MuiInputLabel-root': {
+                color: theme.palette.mode === 'light' ? '#666666' : '#b3b3b3',
+              },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)',
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+              },
+            }}
           />
 
           {/* Password Field */}
@@ -116,10 +148,53 @@ function Register() {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            sx={{
+              '& .MuiInputBase-root': {
+                color: theme.palette.mode === 'light' ? '#333333' : '#ffffff',
+                backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#2d2d2d',
+              },
+              '& .MuiInputLabel-root': {
+                color: theme.palette.mode === 'light' ? '#666666' : '#b3b3b3',
+              },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)',
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+              },
+            }}
           />
 
           {/* Role Selection */}
-          <FormControl fullWidth margin="normal">
+          <FormControl 
+            fullWidth 
+            margin="normal"
+            sx={{
+              '& .MuiInputBase-root': {
+                color: theme.palette.mode === 'light' ? '#333333' : '#ffffff',
+                backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#2d2d2d',
+              },
+              '& .MuiInputLabel-root': {
+                color: theme.palette.mode === 'light' ? '#666666' : '#b3b3b3',
+              },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)',
+                },
+                '&:hover fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+                },
+              },
+            }}
+          >
             <InputLabel id="role-label">Role</InputLabel>
             <Select
               labelId="role-label"
@@ -152,13 +227,20 @@ function Register() {
             type="submit"
             fullWidth
             variant="contained"
-            color="primary"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ 
+              mt: 3, 
+              mb: 2,
+              bgcolor: theme.palette.mode === 'light' ? '#1976d2' : '#90caf9',
+              color: '#ffffff',
+              '&:hover': {
+                bgcolor: theme.palette.mode === 'light' ? '#1565c0' : '#64b5f6',
+              },
+            }}
           >
             Register
           </Button>
         </Box>
-      </Box>
+      </Paper>
     </Container>
   );
 }
