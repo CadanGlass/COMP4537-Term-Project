@@ -65,6 +65,30 @@ class User {
     const sql = "DELETE FROM users WHERE id = ?";
     return await this.db.run(sql, [userId]);
   };
+
+  createEndpointStatsTable = async () => {
+    const sql = `CREATE TABLE IF NOT EXISTS endpoint_stats (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      method TEXT NOT NULL,
+      endpoint TEXT NOT NULL,
+      requests INTEGER DEFAULT 0,
+      UNIQUE(method, endpoint)
+    )`;
+    return await this.db.run(sql);
+  };
+
+  incrementEndpointStat = async (method, endpoint) => {
+    const sql = `INSERT INTO endpoint_stats (method, endpoint, requests) 
+                 VALUES (?, ?, 1)
+                 ON CONFLICT(method, endpoint) 
+                 DO UPDATE SET requests = requests + 1`;
+    return await this.db.run(sql, [method, endpoint]);
+  };
+
+  getEndpointStats = async () => {
+    const sql = "SELECT method, endpoint, requests FROM endpoint_stats ORDER BY requests DESC";
+    return await this.db.all(sql);
+  };
 }
 
 module.exports = User;

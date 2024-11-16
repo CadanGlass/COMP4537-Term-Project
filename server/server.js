@@ -31,6 +31,7 @@ class Server {
     this.setupServices();
     this.setupMiddleware();
     this.setupRoutes();
+    this.initializeEndpointTracking();
   }
 
   setupDatabase = () => {
@@ -66,6 +67,7 @@ class Server {
   setupMiddleware = () => {
     this.app.use(express.json());
     this.app.use(cors());
+    this.app.use(this.trackEndpoint);
     this.app.use(this.logRequest);
   };
 
@@ -121,6 +123,12 @@ class Server {
       verifyJWT(this.authService),
       checkAdmin,
       this.handleDeleteUser
+    );
+    this.app.get(
+      "/admin/endpoint-stats",
+      verifyJWT(this.authService),
+      checkAdmin,
+      this.handleGetEndpointStats
     );
   };
 
@@ -310,6 +318,31 @@ class Server {
 
       await this.userModel.deleteUser(userId);
       res.json({ message: "User deleted successfully" });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  };
+
+  initializeEndpointTracking = async () => {
+    await this.userModel.createEndpointStatsTable();
+  };
+
+  trackEndpoint = async (req, res, next) => {
+    const method = req.method;
+    const endpoint = req.path;
+    
+    try {
+      await this.userModel.incrementEndpointStat(method, endpoint);
+    } catch (err) {
+      console.error('Error tracking endpoint:', err);
+    }
+    next();
+  };
+
+  handleGetEndpointStats = async (req, res) => {
+    try {
+      const stats = await this.userModel.getEndpointStats();
+      res.json({ stats });
     } catch (err) {
       this.handleError(res, err);
     }

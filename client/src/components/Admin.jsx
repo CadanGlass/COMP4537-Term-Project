@@ -46,6 +46,8 @@ function Admin() {
     message: '',
     severity: 'success'
   });
+  const [endpointStats, setEndpointStats] = useState([]);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   // Function to decode JWT (if needed)
   const decodeJWT = (token) => {
@@ -122,6 +124,30 @@ function Admin() {
         setCurrentUserEmail(decodedToken.email);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchEndpointStats = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("https://cadan.xyz/admin/endpoint-stats", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (response.data.stats) {
+          setEndpointStats(response.data.stats);
+        }
+      } catch (err) {
+        console.error("Error fetching endpoint stats:", err);
+        setError("Failed to fetch endpoint statistics");
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchEndpointStats();
   }, []);
 
   const handlePromoteUser = async (userId) => {
@@ -333,6 +359,63 @@ function Admin() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Add this new section for endpoint statistics */}
+      <Box
+        sx={{
+          marginTop: 4,
+          padding: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          boxShadow: 3,
+          borderRadius: 2,
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Typography component="h2" variant="h5" gutterBottom>
+          Endpoint Statistics
+        </Typography>
+
+        {statsLoading ? (
+          <CircularProgress />
+        ) : (
+          <TableContainer component={Paper} sx={{ width: "100%", mb: 4 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center">
+                    <strong>Method</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Endpoint</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Requests</strong>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {endpointStats.length > 0 ? (
+                  endpointStats.map((stat, index) => (
+                    <TableRow key={index}>
+                      <TableCell align="center">{stat.method}</TableCell>
+                      <TableCell align="center">{stat.endpoint}</TableCell>
+                      <TableCell align="center">{stat.requests}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3} align="center">
+                      No endpoint statistics available
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Box>
     </Container>
   );
 }
