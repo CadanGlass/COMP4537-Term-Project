@@ -55,6 +55,16 @@ class User {
     const sql = "UPDATE users SET role = ? WHERE id = ?";
     return await this.db.run(sql, [newRole, userId]);
   };
+
+  getById = async (userId) => {
+    const sql = "SELECT * FROM users WHERE id = ?";
+    return await this.db.get(sql, [userId]);
+  };
+
+  deleteUser = async (userId) => {
+    const sql = "DELETE FROM users WHERE id = ?";
+    return await this.db.run(sql, [userId]);
+  };
 }
 
 module.exports = User;

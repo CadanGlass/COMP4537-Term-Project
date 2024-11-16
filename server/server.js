@@ -116,6 +116,12 @@ class Server {
       checkAdmin,
       this.handlePromoteUser
     );
+    this.app.delete(
+      "/admin/delete-user/:userId",
+      verifyJWT(this.authService),
+      checkAdmin,
+      this.handleDeleteUser
+    );
   };
 
   start = () => {
@@ -279,6 +285,32 @@ class Server {
       if (err.name === 'JsonWebTokenError') {
         return res.status(400).json({ message: "Invalid or expired token" });
       }
+      this.handleError(res, err);
+    }
+  };
+
+  handleDeleteUser = async (req, res) => {
+    const { userId } = req.params;
+    
+    try {
+      // Check if the requesting user is admin@admin.com
+      if (req.user.email !== 'admin@admin.com') {
+        return res.status(403).json({ 
+          message: "Only the super admin can delete users" 
+        });
+      }
+
+      // Prevent deletion of the super admin account
+      const userToDelete = await this.userModel.getById(userId);
+      if (userToDelete?.email === 'admin@admin.com') {
+        return res.status(403).json({ 
+          message: "Super admin account cannot be deleted" 
+        });
+      }
+
+      await this.userModel.deleteUser(userId);
+      res.json({ message: "User deleted successfully" });
+    } catch (err) {
       this.handleError(res, err);
     }
   };

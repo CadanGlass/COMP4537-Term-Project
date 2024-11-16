@@ -17,8 +17,16 @@ import {
   Paper,
   IconButton,
   Tooltip,
+  Button,
+  Snackbar,
 } from "@mui/material";
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 // Optional: You can use Material-UI's styling solutions or CSS modules
 // For simplicity, inline styles are used here.
@@ -28,6 +36,16 @@ function Admin() {
   const [loading, setLoading] = useState(true); // To handle loading state
   const [error, setError] = useState("");
   const [promoting, setPromoting] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    userId: null
+  });
+  const [currentUserEmail, setCurrentUserEmail] = useState('');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   // Function to decode JWT (if needed)
   const decodeJWT = (token) => {
@@ -96,6 +114,16 @@ function Admin() {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = decodeJWT(token);
+      if (decodedToken) {
+        setCurrentUserEmail(decodedToken.email);
+      }
+    }
+  }, []);
+
   const handlePromoteUser = async (userId) => {
     try {
       setPromoting(true);
@@ -125,6 +153,49 @@ function Admin() {
     } finally {
       setPromoting(false);
     }
+  };
+
+  const handleDeleteClick = (userId) => {
+    setDeleteDialog({ open: true, userId });
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialog({ open: false, userId: null });
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `https://cadan.xyz/admin/delete-user/${deleteDialog.userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update local state to remove deleted user
+      setUsers(users.filter(user => user.id !== deleteDialog.userId));
+      setSnackbar({
+        open: true,
+        message: 'User deleted successfully',
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      setSnackbar({
+        open: true,
+        message: `Failed to delete user: ${err.response?.data?.message || err.message}`,
+        severity: 'error'
+      });
+    } finally {
+      handleCloseDeleteDialog();
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   return (
@@ -200,6 +271,17 @@ function Admin() {
                               </IconButton>
                             </Tooltip>
                           )}
+                          {currentUserEmail === 'admin@admin.com' && user.email !== 'admin@admin.com' && (
+                            <Tooltip title="Delete User">
+                              <IconButton
+                                onClick={() => handleDeleteClick(user.id)}
+                                color="error"
+                                size="small"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))
@@ -216,6 +298,41 @@ function Admin() {
           </>
         )}
       </Box>
+
+      {/* Add Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialog.open}
+        onClose={handleCloseDeleteDialog}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this user? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button onClick={handleDeleteUser} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Snackbar */}
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
