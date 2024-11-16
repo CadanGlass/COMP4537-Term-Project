@@ -16,6 +16,7 @@ const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
 const nodemailer = require("nodemailer");
 const util = require("util");
+const helmet = require('helmet');
 
 // Import classes and middleware
 const User = require("./models/User");
@@ -64,7 +65,17 @@ class Server {
   };
 
   setupMiddleware = () => {
-    this.app.use(express.json());
+    /**
+     * XSS Prevention with Helmet:
+     * 1. Content-Security-Policy: Restricts sources of content that can be loaded
+     * 2. X-XSS-Protection: Enables browser's built-in XSS filtering
+     * 3. X-Content-Type-Options: Prevents MIME-sniffing
+     * 4. X-Frame-Options: Prevents clickjacking attacks
+     * 5. Strict-Transport-Security: Forces HTTPS connections
+     * 6. Remove X-Powered-By: Hides server information
+     */
+    this.app.use(helmet());
+    this.app.use(express.json({ strict: true }));
     this.app.use(cors());
     this.app.use(this.logRequest);
   };
@@ -173,7 +184,7 @@ class Server {
 
   // Helper methods
   validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@<>"'`=]+@[^\s@<>"'`=]+\.[^\s@<>"'`=]+$/;
     return email && emailRegex.test(email);
   };
 
