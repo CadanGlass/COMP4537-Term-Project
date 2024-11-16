@@ -1,3 +1,13 @@
+/**
+ * Authentication Service
+ * Handles all authentication-related business logic including:
+ * - User registration
+ * - Login authentication
+ * - Token generation and validation
+ * - Password reset functionality
+ * Serves as a middleware between routes and database operations.
+ */
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
