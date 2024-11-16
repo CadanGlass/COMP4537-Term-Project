@@ -27,6 +27,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { ADMIN_STRINGS } from '../constants/strings';
 
 // Optional: You can use Material-UI's styling solutions or CSS modules
 // For simplicity, inline styles are used here.
@@ -75,20 +76,20 @@ function Admin() {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        setError("No token found, please log in.");
+        setError(ADMIN_STRINGS.ERRORS.NO_TOKEN);
         setLoading(false);
         return;
       }
 
       const decodedToken = decodeJWT(token);
       if (!decodedToken) {
-        setError("Invalid token.");
+        setError(ADMIN_STRINGS.ERRORS.INVALID_TOKEN);
         setLoading(false);
         return;
       }
 
       if (decodedToken.role !== "admin") {
-        setError("Access denied. Admins only.");
+        setError(ADMIN_STRINGS.ERRORS.ACCESS_DENIED);
         setLoading(false);
         return;
       }
@@ -103,13 +104,13 @@ function Admin() {
         if (response.data.users) {
           setUsers(response.data.users);
         } else {
-          setError("No users found or unable to fetch users.");
+          setError(ADMIN_STRINGS.ERRORS.NO_USERS);
         }
       } catch (err) {
         if (err.response && err.response.status === 401) {
-          setError("Unauthorized access. Please log in as an admin.");
+          setError(ADMIN_STRINGS.ERRORS.UNAUTHORIZED);
         } else {
-          setError("Error accessing admin route.");
+          setError(ADMIN_STRINGS.ERRORS.ADMIN_ROUTE_ERROR);
         }
         console.error(err);
       } finally {
@@ -145,7 +146,7 @@ function Admin() {
         }
       } catch (err) {
         console.error("Error fetching endpoint stats:", err);
-        setError("Failed to fetch endpoint statistics");
+        setError(ADMIN_STRINGS.ERRORS.STATS_ERROR);
       } finally {
         setStatsLoading(false);
       }
@@ -188,15 +189,15 @@ function Admin() {
         // Show success message
         setSnackbar({
           open: true,
-          message: 'User successfully promoted to admin!',
+          message: ADMIN_STRINGS.NOTIFICATIONS.PROMOTE_SUCCESS,
           severity: 'success'
         });
       }
     } catch (err) {
-      console.error("Error promoting user:", err);
+      console.error(ADMIN_STRINGS.ERRORS.PROMOTE_ERROR, err);
       setSnackbar({
         open: true,
-        message: `Failed to promote user: ${err.response?.data?.message || err.message}`,
+        message: `${ADMIN_STRINGS.ERRORS.PROMOTE_ERROR} ${err.response?.data?.message || err.message}`,
         severity: 'error'
       });
     } finally {
@@ -229,14 +230,14 @@ function Admin() {
       setUsers(users.filter(user => user.id !== deleteDialog.userId));
       setSnackbar({
         open: true,
-        message: 'User deleted successfully',
+        message: ADMIN_STRINGS.NOTIFICATIONS.DELETE_SUCCESS,
         severity: 'success'
       });
     } catch (err) {
-      console.error("Error deleting user:", err);
+      console.error(ADMIN_STRINGS.ERRORS.DELETE_ERROR, err);
       setSnackbar({
         open: true,
-        message: `Failed to delete user: ${err.response?.data?.message || err.message}`,
+        message: `${ADMIN_STRINGS.ERRORS.DELETE_ERROR} ${err.response?.data?.message || err.message}`,
         severity: 'error'
       });
     } finally {
@@ -263,7 +264,7 @@ function Admin() {
         }}
       >
         <Typography component="h1" variant="h4" gutterBottom>
-          Admin Dashboard
+          {ADMIN_STRINGS.TITLE}
         </Typography>
 
         {/* Display Errors */}
@@ -284,19 +285,19 @@ function Admin() {
                 <TableHead>
                   <TableRow>
                     <TableCell align="center">
-                      <strong>ID</strong>
+                      <strong>{ADMIN_STRINGS.TABLE.ID}</strong>
                     </TableCell>
                     <TableCell align="center">
-                      <strong>Email</strong>
+                      <strong>{ADMIN_STRINGS.TABLE.EMAIL}</strong>
                     </TableCell>
                     <TableCell align="center">
-                      <strong>Role</strong>
+                      <strong>{ADMIN_STRINGS.TABLE.ROLE}</strong>
                     </TableCell>
                     <TableCell align="center">
-                      <strong>API Calls Remaining</strong>
+                      <strong>{ADMIN_STRINGS.TABLE.API_CALLS}</strong>
                     </TableCell>
                     <TableCell align="center">
-                      <strong>Actions</strong>
+                      <strong>{ADMIN_STRINGS.TABLE.ACTIONS}</strong>
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -310,7 +311,7 @@ function Admin() {
                         <TableCell align="center">{user.api}</TableCell>
                         <TableCell align="center">
                           {user.role === "user" && (
-                            <Tooltip title="Promote to Admin">
+                            <Tooltip title={ADMIN_STRINGS.BUTTONS.PROMOTE_TOOLTIP}>
                               <IconButton
                                 onClick={() => handlePromoteClick(user.id)}
                                 disabled={promoting}
@@ -322,7 +323,7 @@ function Admin() {
                             </Tooltip>
                           )}
                           {currentUserEmail === 'admin@admin.com' && user.email !== 'admin@admin.com' && (
-                            <Tooltip title="Delete User">
+                            <Tooltip title={ADMIN_STRINGS.BUTTONS.DELETE_TOOLTIP}>
                               <IconButton
                                 onClick={() => handleDeleteClick(user.id)}
                                 color="error"
@@ -338,7 +339,7 @@ function Admin() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} align="center">
-                        No users found.
+                        {ADMIN_STRINGS.TABLE.NO_USERS_FOUND}
                       </TableCell>
                     </TableRow>
                   )}
@@ -354,16 +355,18 @@ function Admin() {
         open={deleteDialog.open}
         onClose={handleCloseDeleteDialog}
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>{ADMIN_STRINGS.DIALOGS.DELETE.TITLE}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this user? This action cannot be undone.
+            {ADMIN_STRINGS.DIALOGS.DELETE.CONTENT}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button onClick={handleCloseDeleteDialog}>
+            {ADMIN_STRINGS.DIALOGS.DELETE.CANCEL}
+          </Button>
           <Button onClick={handleDeleteUser} color="error">
-            Delete
+            {ADMIN_STRINGS.DIALOGS.DELETE.CONFIRM}
           </Button>
         </DialogActions>
       </Dialog>
@@ -389,20 +392,18 @@ function Admin() {
         open={promoteDialog.open}
         onClose={handleClosePromoteDialog}
       >
-        <DialogTitle>Confirm Promotion</DialogTitle>
+        <DialogTitle>{ADMIN_STRINGS.DIALOGS.PROMOTE.TITLE}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to promote this user to admin? This will give them full administrative privileges.
+            {ADMIN_STRINGS.DIALOGS.PROMOTE.CONTENT}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClosePromoteDialog}>Cancel</Button>
-          <Button 
-            onClick={handlePromoteUser} 
-            color="primary"
-            disabled={promoting}
-          >
-            {promoting ? "Promoting..." : "Promote"}
+          <Button onClick={handleClosePromoteDialog}>
+            {ADMIN_STRINGS.DIALOGS.PROMOTE.CANCEL}
+          </Button>
+          <Button onClick={handlePromoteUser} color="primary" disabled={promoting}>
+            {promoting ? ADMIN_STRINGS.DIALOGS.PROMOTE.CONFIRMING : ADMIN_STRINGS.DIALOGS.PROMOTE.CONFIRM}
           </Button>
         </DialogActions>
       </Dialog>
@@ -421,7 +422,7 @@ function Admin() {
         }}
       >
         <Typography component="h2" variant="h5" gutterBottom>
-          Endpoint Statistics
+          {ADMIN_STRINGS.STATS.TITLE}
         </Typography>
 
         {statsLoading ? (
@@ -432,13 +433,13 @@ function Admin() {
               <TableHead>
                 <TableRow>
                   <TableCell align="center">
-                    <strong>Method</strong>
+                    <strong>{ADMIN_STRINGS.STATS.TABLE.METHOD}</strong>
                   </TableCell>
                   <TableCell align="center">
-                    <strong>Endpoint</strong>
+                    <strong>{ADMIN_STRINGS.STATS.TABLE.ENDPOINT}</strong>
                   </TableCell>
                   <TableCell align="center">
-                    <strong>Requests</strong>
+                    <strong>{ADMIN_STRINGS.STATS.TABLE.REQUESTS}</strong>
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -454,7 +455,7 @@ function Admin() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={3} align="center">
-                      No endpoint statistics available
+                      {ADMIN_STRINGS.STATS.TABLE.NO_STATS}
                     </TableCell>
                   </TableRow>
                 )}
