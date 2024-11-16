@@ -48,6 +48,10 @@ function Admin() {
   });
   const [endpointStats, setEndpointStats] = useState([]);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [promoteDialog, setPromoteDialog] = useState({
+    open: false,
+    userId: null
+  });
 
   // Function to decode JWT (if needed)
   const decodeJWT = (token) => {
@@ -150,14 +154,22 @@ function Admin() {
     fetchEndpointStats();
   }, []);
 
-  const handlePromoteUser = async (userId) => {
+  const handlePromoteClick = (userId) => {
+    setPromoteDialog({ open: true, userId });
+  };
+
+  const handleClosePromoteDialog = () => {
+    setPromoteDialog({ open: false, userId: null });
+  };
+
+  const handlePromoteUser = async () => {
     try {
       setPromoting(true);
       const token = localStorage.getItem("token");
       
       const response = await axios.put(
         "https://cadan.xyz/admin/promote",
-        { userId },
+        { userId: promoteDialog.userId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -168,16 +180,28 @@ function Admin() {
       if (response.data.message) {
         // Update the local state to reflect the change
         setUsers(users.map(user => 
-          user.id === userId 
+          user.id === promoteDialog.userId 
             ? { ...user, role: "admin" }
             : user
         ));
+        
+        // Show success message
+        setSnackbar({
+          open: true,
+          message: 'User successfully promoted to admin!',
+          severity: 'success'
+        });
       }
     } catch (err) {
       console.error("Error promoting user:", err);
-      setError("Failed to promote user to admin.");
+      setSnackbar({
+        open: true,
+        message: `Failed to promote user: ${err.response?.data?.message || err.message}`,
+        severity: 'error'
+      });
     } finally {
       setPromoting(false);
+      handleClosePromoteDialog();
     }
   };
 
@@ -288,7 +312,7 @@ function Admin() {
                           {user.role === "user" && (
                             <Tooltip title="Promote to Admin">
                               <IconButton
-                                onClick={() => handlePromoteUser(user.id)}
+                                onClick={() => handlePromoteClick(user.id)}
                                 disabled={promoting}
                                 color="primary"
                                 size="small"
@@ -359,6 +383,29 @@ function Admin() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Add Promote Confirmation Dialog */}
+      <Dialog
+        open={promoteDialog.open}
+        onClose={handleClosePromoteDialog}
+      >
+        <DialogTitle>Confirm Promotion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to promote this user to admin? This will give them full administrative privileges.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClosePromoteDialog}>Cancel</Button>
+          <Button 
+            onClick={handlePromoteUser} 
+            color="primary"
+            disabled={promoting}
+          >
+            {promoting ? "Promoting..." : "Promote"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Add this new section for endpoint statistics */}
       <Box
