@@ -16,7 +16,6 @@ const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
 const nodemailer = require("nodemailer");
 const util = require("util");
-const helmet = require('helmet');
 
 // Import classes and middleware
 const User = require("./models/User");
@@ -65,17 +64,7 @@ class Server {
   };
 
   setupMiddleware = () => {
-    /**
-     * XSS Prevention with Helmet:
-     * 1. Content-Security-Policy: Restricts sources of content that can be loaded
-     * 2. X-XSS-Protection: Enables browser's built-in XSS filtering
-     * 3. X-Content-Type-Options: Prevents MIME-sniffing
-     * 4. X-Frame-Options: Prevents clickjacking attacks
-     * 5. Strict-Transport-Security: Forces HTTPS connections
-     * 6. Remove X-Powered-By: Hides server information
-     */
-    this.app.use(helmet());
-    this.app.use(express.json({ strict: true }));
+    this.app.use(express.json());
     this.app.use(cors());
     this.app.use(this.logRequest);
   };
@@ -121,6 +110,12 @@ class Server {
     );
     this.app.post("/request-reset-password", this.handleRequestResetPassword);
     this.app.post("/reset-password", this.handleResetPassword);
+    this.app.post(
+      "/admin/promote",
+      verifyJWT(this.authService),
+      checkAdmin,
+      this.handlePromoteUser
+    );
   };
 
   start = () => {
@@ -184,7 +179,7 @@ class Server {
 
   // Helper methods
   validateEmail = (email) => {
-    const emailRegex = /^[^\s@<>"'`=]+@[^\s@<>"'`=]+\.[^\s@<>"'`=]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return email && emailRegex.test(email);
   };
 
@@ -194,6 +189,98 @@ class Server {
       return res.status(400).json({ message: "Email already exists" });
     }
     res.status(500).json({ message: "Internal server error" });
+  };
+
+  handlePromoteUser = async (req, res) => {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    try {
+      await this.userModel.updateRole(userId, "admin");
+      res.json({ message: "User promoted to admin successfully" });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  };
+
+  handleAdmin = async (req, res) => {
+    try {
+      const users = await this.userModel.getAllUsers();
+      res.json({ users });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  };
+
+  handleProtected = async (req, res) => {
+    res.json({ message: "Access granted to protected route" });
+  };
+
+  handleGetApiCount = async (req, res) => {
+    try {
+      const user = await this.userModel.getByEmail(req.user.email);
+      res.json({ apiCount: user.api });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  };
+
+  handleUseApi = async (req, res) => {
+    try {
+      await this.userModel.decrementApiCount(req.user.email);
+      const user = await this.userModel.getByEmail(req.user.email);
+      res.json({ apiCount: user.api });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  };
+
+  handleRequestResetPassword = async (req, res) => {
+    const { email } = req.body;
+
+    if (!this.validateEmail(email)) {
+      return res.status(400).json({ message: "Invalid email address" });
+    }
+
+    try {
+      const user = await this.userModel.getByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const resetToken = this.authService.generateToken(
+        { email: user.email },
+        '1h'
+      );
+
+      await this.emailService.sendResetEmail(email, resetToken);
+      res.json({ message: "Password reset email sent" });
+    } catch (err) {
+      this.handleError(res, err);
+    }
+  };
+
+  handleResetPassword = async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: "Token and new password are required" });
+    }
+
+    try {
+      const decoded = this.authService.verifyToken(token);
+      const hashedPassword = await this.authService.hashPassword(newPassword);
+      await this.userModel.updatePassword(decoded.email, hashedPassword);
+      res.json({ message: "Password reset successful" });
+    } catch (err) {
+      if (err.name === 'JsonWebTokenError') {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+      this.handleError(res, err);
+    }
   };
 }
 

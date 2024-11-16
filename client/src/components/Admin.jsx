@@ -15,7 +15,10 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 // Optional: You can use Material-UI's styling solutions or CSS modules
 // For simplicity, inline styles are used here.
@@ -24,6 +27,7 @@ function Admin() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true); // To handle loading state
   const [error, setError] = useState("");
+  const [promoting, setPromoting] = useState(false);
 
   // Function to decode JWT (if needed)
   const decodeJWT = (token) => {
@@ -92,6 +96,37 @@ function Admin() {
     fetchUsers();
   }, []);
 
+  const handlePromoteUser = async (userId) => {
+    try {
+      setPromoting(true);
+      const token = localStorage.getItem("token");
+      
+      const response = await axios.post(
+        "https://cadan.xyz/admin/promote",
+        { userId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.message) {
+        // Update the local state to reflect the change
+        setUsers(users.map(user => 
+          user.id === userId 
+            ? { ...user, role: "admin" }
+            : user
+        ));
+      }
+    } catch (err) {
+      console.error("Error promoting user:", err);
+      setError("Failed to promote user to admin.");
+    } finally {
+      setPromoting(false);
+    }
+  };
+
   return (
     <Container maxWidth="lg">
       <Box
@@ -139,6 +174,9 @@ function Admin() {
                     <TableCell align="center">
                       <strong>API Calls Remaining</strong>
                     </TableCell>
+                    <TableCell align="center">
+                      <strong>Actions</strong>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -149,11 +187,25 @@ function Admin() {
                         <TableCell align="center">{user.email}</TableCell>
                         <TableCell align="center">{user.role}</TableCell>
                         <TableCell align="center">{user.api}</TableCell>
+                        <TableCell align="center">
+                          {user.role === "user" && (
+                            <Tooltip title="Promote to Admin">
+                              <IconButton
+                                onClick={() => handlePromoteUser(user.id)}
+                                disabled={promoting}
+                                color="primary"
+                                size="small"
+                              >
+                                <AdminPanelSettingsIcon />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} align="center">
+                      <TableCell colSpan={5} align="center">
                         No users found.
                       </TableCell>
                     </TableRow>

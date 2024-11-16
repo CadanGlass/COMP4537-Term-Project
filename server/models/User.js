@@ -50,6 +50,11 @@ class User {
     const sql = "SELECT id, email, role, api FROM users";
     return await this.db.all(sql, []);
   };
+
+  updateRole = async (userId, newRole) => {
+    const sql = "UPDATE users SET role = ? WHERE id = ?";
+    return await this.db.run(sql, [newRole, userId]);
+  };
 }
 
 module.exports = User;
