@@ -35,15 +35,21 @@ class User {
         throw new Error('Email already exists');
       }
 
-      // Simple insert into users table
-      const sql = "INSERT INTO users (email, password, role, api) VALUES (?, ?, ?, ?)";
-      await this.db.run(sql, [email, hashedPassword, role, 20]);
+      // Insert into users table
+      const sql = "INSERT INTO users (email, password, role) VALUES (?, ?, ?)";
+      await this.db.run(sql, [email, hashedPassword, role]);
       
-      // Fetch the created user to confirm creation and return
+      // Fetch the created user
       const newUser = await this.getByEmail(email);
       if (!newUser) {
         throw new Error('User creation failed');
       }
+
+      // Create API tracking entry
+      await this.db.run(
+        'INSERT INTO api_tracking (user_id, remaining_calls) VALUES (?, ?)',
+        [newUser.id, 20]
+      );
 
       return newUser;
     } catch (err) {
@@ -61,9 +67,9 @@ class User {
     return await this.db.run(sql, [hashedPassword, email]);
   };
 
-  decrementApiCount = async (email) => {
-    const sql = "UPDATE users SET api = api - 1 WHERE email = ?";
-    return await this.db.run(sql, [email]);
+  decrementApiCount = async (userId) => {
+    const sql = "UPDATE api_tracking SET remaining_calls = remaining_calls - 1 WHERE user_id = ?";
+    return await this.db.run(sql, [userId]);
   };
 
   getAllUsers = async () => {
@@ -108,6 +114,12 @@ class User {
   getEndpointStats = async () => {
     const sql = "SELECT method, endpoint, requests FROM endpoint_stats ORDER BY requests DESC";
     return await this.db.all(sql);
+  };
+
+  getApiCount = async (userId) => {
+    const sql = "SELECT remaining_calls FROM api_tracking WHERE user_id = ?";
+    const result = await this.db.get(sql, [userId]);
+    return result ? result.remaining_calls : null;
   };
 }
 

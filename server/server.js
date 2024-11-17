@@ -246,7 +246,8 @@ class Server {
   handleGetApiCount = async (req, res) => {
     try {
       const user = await this.userModel.getByEmail(req.user.email);
-      res.json({ apiCount: user.api });
+      const apiCount = await this.userModel.getApiCount(user.id);
+      res.json({ apiCount });
     } catch (err) {
       this.handleError(res, err);
     }
@@ -254,9 +255,10 @@ class Server {
 
   handleUseApi = async (req, res) => {
     try {
-      await this.userModel.decrementApiCount(req.user.email);
       const user = await this.userModel.getByEmail(req.user.email);
-      res.json({ apiCount: user.api });
+      await this.userModel.decrementApiCount(user.id);
+      const apiCount = await this.userModel.getApiCount(user.id);
+      res.json({ apiCount });
     } catch (err) {
       this.handleError(res, err);
     }
