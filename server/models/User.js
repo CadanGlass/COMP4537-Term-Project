@@ -9,6 +9,47 @@
  * Provides an abstraction layer between the database and server routes.
  */
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: Auto-generated user ID
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: User's email address
+ *         password:
+ *           type: string
+ *           description: Hashed password
+ *         role:
+ *           type: string
+ *           enum: [user, admin]
+ *           description: User's role
+ *         api:
+ *           type: integer
+ *           description: Remaining API calls
+ *     EndpointStat:
+ *       type: object
+ *       properties:
+ *         method:
+ *           type: string
+ *           description: HTTP method
+ *         endpoint:
+ *           type: string
+ *           description: API endpoint path
+ *         requests:
+ *           type: integer
+ *           description: Number of requests made
+ */
+
 class User {
   constructor(db) {
     this.db = db;

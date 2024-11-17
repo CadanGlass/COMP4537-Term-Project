@@ -16,6 +16,8 @@ const cors = require("cors");
 const sqlite3 = require("sqlite3").verbose();
 const nodemailer = require("nodemailer");
 const util = require("util");
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 // Import classes and middleware
 const User = require("./models/User");
@@ -69,6 +71,28 @@ class Server {
     this.app.use(cors());
     this.app.use(this.trackEndpoint);
     this.app.use(this.logRequest);
+    const options = {
+      definition: {
+        openapi: '3.0.0',
+        info: {
+          title: 'Image to Text API',
+          version: '1.0.0',
+          description: 'API for converting images to text and managing users',
+        },
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+            },
+          },
+        },
+      },
+      apis: ['./server.js', './models/*.js'], // Path to the API docs
+    };
+    const specs = swaggerJsdoc(options);
+    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
   };
 
   logRequest = (req, res, next) => {
