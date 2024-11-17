@@ -1,6 +1,18 @@
 /**
  * User Model
  * Defines the SQLite3 database operations for user accounts.
+ * 
+ * Resources & Attributions:
+ * - ChatGPT: Assisted with SQL query optimization and security measures
+ * - SQLite3 Documentation: https://www.sqlite.org/docs.html
+ * - OWASP Security Guidelines: https://owasp.org/
+ * - Stack Overflow: SQL injection prevention techniques
+ * 
+ * This model implements security best practices learned from:
+ * - COMP4537 Course Materials
+ * - ChatGPT suggestions for SQL injection prevention
+ * - Industry standard authentication patterns
+ * 
  * Handles:
  * - User CRUD operations
  * - Email/password storage

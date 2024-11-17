@@ -1,6 +1,19 @@
 /**
  * Main Server Application
  * Entry point for the Express.js server application.
+ * 
+ * Resources & Attributions:
+ * - OpenAI's ChatGPT: Assisted with code structure, debugging, and Swagger documentation
+ * - Express.js Documentation: https://expressjs.com/
+ * - Swagger/OpenAPI Documentation: https://swagger.io/docs/
+ * - JWT Implementation: https://jwt.io/
+ * - SQLite Documentation: https://www.sqlite.org/docs.html
+ * 
+ * This project was developed with assistance from:
+ * - ChatGPT 3.5/4.0: Helped with API design, security implementations, and documentation
+ * - COMP4537 Course Materials: Database design and REST API principles
+ * - Stack Overflow: Various debugging solutions and best practices
+ * 
  * Configures:
  * - Express middleware
  * - Database connection

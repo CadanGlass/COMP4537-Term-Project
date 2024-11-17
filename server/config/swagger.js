@@ -1,3 +1,18 @@
+/**
+ * Swagger/OpenAPI Configuration
+ * 
+ * Resources & Attributions:
+ * - ChatGPT: Helped structure the OpenAPI documentation
+ * - Swagger Documentation: https://swagger.io/docs/
+ * - OpenAPI Specification: https://spec.openapis.org/oas/v3.0.0
+ * - Express Swagger UI: https://www.npmjs.com/package/swagger-ui-express
+ * 
+ * Documentation structure and organization inspired by:
+ * - ChatGPT recommendations
+ * - REST API best practices
+ * - Industry standard API documentation patterns
+ */
+
 const path = require('path');
 
 const swaggerDefinition = {
