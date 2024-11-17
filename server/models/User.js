@@ -104,26 +104,11 @@ class User {
   };
 
   incrementEndpointStat = async (method, endpoint) => {
-    // Define valid API endpoints to track
-    const validEndpoints = [
-      '/api/login',
-      '/api/register',
-      '/api/reset-password',
-      '/api/user',
-      '/api/admin/users',
-      '/api/admin/promote',
-      // Add other valid endpoints you want to track
-    ];
-
-    // Only track if it's a valid endpoint
-    if (validEndpoints.includes(endpoint)) {
-      const sql = `INSERT INTO endpoint_stats (method, endpoint, requests) 
-                   VALUES (?, ?, 1)
-                   ON CONFLICT(method, endpoint) 
-                   DO UPDATE SET requests = requests + 1`;
-      return await this.db.run(sql, [method, endpoint]);
-    }
-    return null;
+    const sql = `INSERT INTO endpoint_stats (method, endpoint, requests) 
+                 VALUES (?, ?, 1)
+                 ON CONFLICT(method, endpoint) 
+                 DO UPDATE SET requests = requests + 1`;
+    return await this.db.run(sql, [method, endpoint]);
   };
 
   getEndpointStats = async () => {
@@ -135,11 +120,6 @@ class User {
     const sql = "SELECT remaining_calls FROM api_tracking WHERE user_id = ?";
     const result = await this.db.get(sql, [userId]);
     return result ? result.remaining_calls : null;
-  };
-
-  clearEndpointStats = async () => {
-    const sql = "DELETE FROM endpoint_stats";
-    return await this.db.run(sql);
   };
 }
 

@@ -130,15 +130,6 @@ class Server {
       checkAdmin,
       this.handleGetEndpointStats
     );
-    this.app.post('/api/admin/clear-stats', auth.authenticateToken, auth.requireAdmin, async (req, res) => {
-      try {
-        await userModel.clearEndpointStats();
-        res.json({ message: 'Endpoint stats cleared successfully' });
-      } catch (error) {
-        console.error('Error clearing endpoint stats:', error);
-        res.status(500).json({ error: 'Failed to clear endpoint stats' });
-      }
-    });
   };
 
   start = () => {
