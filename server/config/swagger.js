@@ -1,3 +1,5 @@
+const path = require('path');
+
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
@@ -69,10 +71,10 @@ const swaggerDefinition = {
 const options = {
   swaggerDefinition,
   apis: [
-    './server.js',
-    './models/*.js',
-    './routes/*.js',
-    './docs/*.yaml'
+    path.join(__dirname, '../server.js'),
+    path.join(__dirname, '../models/*.js'),
+    path.join(__dirname, '../routes/*.js'),
+    path.join(__dirname, '../docs/*.yaml')
   ],
 };
 
