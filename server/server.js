@@ -91,7 +91,7 @@ class Server {
           },
         },
       },
-      apis: ['./**/*.js'], // This will include all .js files
+      apis: [__dirname + '/server.js', __dirname + '/models/User.js'],
     };
 
     const specs = swaggerJsdoc(options);
