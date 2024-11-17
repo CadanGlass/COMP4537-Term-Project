@@ -1,0 +1,39 @@
+/get-api-count:
+  get:
+    tags:
+      - API
+    summary: Get remaining API calls
+    security:
+      - bearerAuth: []
+    responses:
+      200:
+        description: Returns API count
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                apiCount:
+                  type: integer
+      401:
+        $ref: '#/components/responses/UnauthorizedError'
+
+/use-api:
+  post:
+    tags:
+      - API
+    summary: Use one API call
+    security:
+      - bearerAuth: []
+    responses:
+      200:
+        description: API call used successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                apiCount:
+                  type: integer
+      401:
+        $ref: '#/components/responses/UnauthorizedError' 

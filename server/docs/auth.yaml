@@ -1,0 +1,74 @@
+/register:
+  post:
+    tags:
+      - Auth
+    summary: Register a new user
+    description: Create a new user account
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+              role:
+                type: string
+                enum: [user, admin]
+                default: user
+    responses:
+      201:
+        description: User registered successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                userId:
+                  type: integer
+      400:
+        description: Invalid input or email exists
+
+/login:
+  post:
+    tags:
+      - Auth
+    summary: Login user
+    description: Authenticate user and get JWT token
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+    responses:
+      200:
+        description: Login successful
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                role:
+                  type: string
+      401:
+        description: Invalid credentials 

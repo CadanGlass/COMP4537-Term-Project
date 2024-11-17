@@ -1,0 +1,79 @@
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Image to Text API',
+    version: '1.0.0',
+    description: 'API for converting images to text and managing users',
+    contact: {
+      name: 'API Support',
+      email: 'support@example.com',
+    },
+  },
+  servers: [
+    {
+      url: 'http://localhost:3003',
+      description: 'Development server',
+    },
+    {
+      url: 'https://cadan.xyz',
+      description: 'Production server',
+    },
+  ],
+  tags: [
+    {
+      name: 'Auth',
+      description: 'Authentication endpoints',
+    },
+    {
+      name: 'Users',
+      description: 'User management',
+    },
+    {
+      name: 'Admin',
+      description: 'Admin only operations',
+    },
+    {
+      name: 'API',
+      description: 'API usage tracking',
+    },
+  ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
+    responses: {
+      UnauthorizedError: {
+        description: 'Access token is missing or invalid',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                message: {
+                  type: 'string',
+                  example: 'Unauthorized',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const options = {
+  swaggerDefinition,
+  apis: [
+    './server.js',
+    './models/*.js',
+    './routes/*.js',
+    './docs/*.yaml'
+  ],
+};
+
+module.exports = options; 

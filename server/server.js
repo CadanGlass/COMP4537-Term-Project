@@ -25,6 +25,8 @@ const AuthService = require("./services/AuthService");
 const EmailService = require("./services/EmailService");
 const { verifyJWT, checkAdmin } = require("./middleware/auth");
 
+const swaggerOptions = require('./config/swagger');
+
 class Server {
   constructor() {
     this.app = express();
@@ -72,30 +74,12 @@ class Server {
     this.app.use(this.trackEndpoint);
     this.app.use(this.logRequest);
 
-    // Add Swagger configuration
-    const options = {
-      definition: {
-        openapi: '3.0.0',
-        info: {
-          title: 'Image to Text API',
-          version: '1.0.0',
-          description: 'API for converting images to text and managing users',
-        },
-        components: {
-          securitySchemes: {
-            bearerAuth: {
-              type: 'http',
-              scheme: 'bearer',
-              bearerFormat: 'JWT',
-            },
-          },
-        },
-      },
-      apis: [__dirname + '/server.js', __dirname + '/models/User.js'],
-    };
-
-    const specs = swaggerJsdoc(options);
-    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+    const specs = swaggerJsdoc(swaggerOptions);
+    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+      explorer: true,
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: "Image to Text API Documentation",
+    }));
   };
 
   logRequest = (req, res, next) => {
