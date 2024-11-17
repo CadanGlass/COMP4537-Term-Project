@@ -165,7 +165,7 @@ class Server {
         message: "Email and password are required.",
       });
     }
-
+//
     try {
       const user = await this.userModel.getByEmail(email);
       if (!user) {
