@@ -23,20 +23,36 @@ class User {
    */
   
   getByEmail = async (email) => {
-    // Using ? placeholder prevents SQL injection by treating email as a literal value
     const sql = "SELECT * FROM users WHERE email = ?";
     return await this.db.get(sql, [email]);
   };
 
-  create = async (email, hashedPassword, role = "user", apiCount = 20) => {
-    // Multiple parameters are passed as array, each ? is replaced safely
-    const sql =
-      "INSERT INTO users (email, password, role, api) VALUES (?, ?, ?, ?)";
-    return await this.db.run(sql, [email, hashedPassword, role, apiCount]);
+  create = async (email, hashedPassword, role = "user") => {
+    try {
+      // Check if user exists first
+      const existingUser = await this.getByEmail(email);
+      if (existingUser) {
+        throw new Error('Email already exists');
+      }
+
+      // Simple insert into users table
+      const sql = "INSERT INTO users (email, password, role, api) VALUES (?, ?, ?, ?)";
+      const result = await this.db.run(sql, [email, hashedPassword, role, 20]);
+      
+      console.log('User creation result:', result); // Debug log
+      
+      if (!result) {
+        throw new Error('Database insert failed');
+      }
+
+      return result;
+    } catch (err) {
+      console.error('Create user error:', err);
+      throw err;
+    }
   };
 
   updatePassword = async (email, hashedPassword) => {
-    // Even for updates, parameters are safely escaped
     const sql = "UPDATE users SET password = ? WHERE email = ?";
     return await this.db.run(sql, [hashedPassword, email]);
   };
