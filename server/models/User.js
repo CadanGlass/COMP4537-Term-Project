@@ -37,17 +37,21 @@ class User {
 
       // Simple insert into users table
       const sql = "INSERT INTO users (email, password, role, api) VALUES (?, ?, ?, ?)";
-      const result = await this.db.run(sql, [email, hashedPassword, role, 20]);
+      await this.db.run(sql, [email, hashedPassword, role, 20]);
       
-      console.log('User creation result:', result); // Debug log
-      
-      if (!result) {
-        throw new Error('Database insert failed');
+      // Fetch the created user to confirm creation and return
+      const newUser = await this.getByEmail(email);
+      if (!newUser) {
+        throw new Error('User creation failed');
       }
 
-      return result;
+      return newUser;
     } catch (err) {
-      console.error('Create user error:', err);
+      console.error('Create user error details:', {
+        message: err.message,
+        code: err.code,
+        stack: err.stack
+      });
       throw err;
     }
   };

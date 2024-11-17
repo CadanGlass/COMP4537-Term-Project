@@ -150,10 +150,20 @@ class Server {
 
     try {
       const hashedPassword = await this.authService.hashPassword(password);
-      await this.userModel.create(email, hashedPassword, role);
-      res.status(201).json({ message: "User registered successfully" });
+      const newUser = await this.userModel.create(email, hashedPassword, role);
+      
+      res.status(201).json({ 
+        message: "User registered successfully",
+        userId: newUser.id
+      });
     } catch (err) {
-      this.handleError(res, err);
+      console.error("Database error during registration:", err);
+      
+      if (err.message === 'Email already exists') {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+      
+      res.status(500).json({ message: "Registration failed" });
     }
   };
 
