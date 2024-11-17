@@ -71,6 +71,8 @@ class Server {
     this.app.use(cors());
     this.app.use(this.trackEndpoint);
     this.app.use(this.logRequest);
+
+    // Add Swagger configuration
     const options = {
       definition: {
         openapi: '3.0.0',
@@ -89,8 +91,9 @@ class Server {
           },
         },
       },
-      apis: ['./server.js', './models/*.js'], // Path to the API docs
+      apis: ['./**/*.js'], // This will include all .js files
     };
+
     const specs = swaggerJsdoc(options);
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
   };
