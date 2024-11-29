@@ -157,11 +157,28 @@ class User {
   };
 
   incrementEndpointStat = async (method, endpoint) => {
-    const sql = `INSERT INTO endpoint_stats (method, endpoint, requests) 
-                 VALUES (?, ?, 1)
-                 ON CONFLICT(method, endpoint) 
-                 DO UPDATE SET requests = requests + 1`;
-    return await this.db.run(sql, [method, endpoint]);
+    // Only track specific endpoints that you care about
+    const validEndpoints = [
+        '/login',
+        '/register',
+        '/api-docs',
+        '/get-api-count',
+        '/admin/endpoint-stats',
+        // Add other legitimate endpoints you want to track
+    ];
+
+    // Normalize the endpoint by removing query parameters
+    const normalizedEndpoint = endpoint.split('?')[0];
+
+    // Only track if it's a valid endpoint
+    if (validEndpoints.includes(normalizedEndpoint)) {
+        const sql = `INSERT INTO endpoint_stats (method, endpoint, requests) 
+                     VALUES (?, ?, 1)
+                     ON CONFLICT(method, endpoint) 
+                     DO UPDATE SET requests = requests + 1`;
+        return await this.db.run(sql, [method, normalizedEndpoint]);
+    }
+    return null;
   };
 
   getEndpointStats = async () => {
